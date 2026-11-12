@@ -1,0 +1,27 @@
+# MITRA-Lite LoRA fine-tune of Qwen2.5-1.5B-Instruct (Apple MLX)
+model: models/qwen2.5-1.5b-instruct
+train: true
+data: data_v2
+fine_tune_type: lora
+num_layers: 16          # adapt the top 16 of 28 transformer blocks
+batch_size: 8
+iters: 1500             # v2: resume from v1 (step 500) on brand-rich data
+learning_rate: 5.0e-5
+lr_schedule:
+  name: cosine_decay
+  warmup: 100
+  arguments: [5.0e-5, 1500, 1.0e-6]
+steps_per_report: 25
+steps_per_eval: 400
+val_batches: 20
+save_every: 250
+max_seq_length: 512
+grad_checkpoint: true
+mask_prompt: true       # learn only the JSON answer, not the prompt
+adapter_path: adapters/mitra-lite-v2
+seed: 2026
+lora_parameters:
+  rank: 16
+  scale: 20.0
+  dropout: 0.05
+resume_adapter_file: adapters/ckpt500/adapters.safetensors

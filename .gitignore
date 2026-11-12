@@ -20,3 +20,5 @@ services/ml/reports/train.log
 # Next build output
 apps/web/.next-build/
 *.log
+services/ml/data_v2/
+services/ml/reports/*.log

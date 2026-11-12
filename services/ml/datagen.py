@@ -126,7 +126,16 @@ EXTRA = ["peanut butter", "almonds", "cashew nuts", "raisins", "cornflakes", "oa
          "school bag", "geometry box", "drawing sheet", "glue stick", "chart paper", "sketch pens", "eraser", "sharpener"]
 P += [(name, [name], [], "plain") for name in EXTRA]
 
+# v2: realistic Tamil Nadu brand + category names, so the model learns to copy unfamiliar product names verbatim
+BRANDS = ["aachi", "sakthi", "mtr", "everest", "hatsun", "arun", "nandini", "idhayam", "gold winner", "bru", "narasus",
+          "cothas", "anil", "kaleeswari", "ponvandu", "nijam", "udhaiyam", "aavin", "milky mist", "sri krishna", "grb",
+          "eastern", "britannia", "sunfeast", "patanjali", "chik", "meera", "hamam", "cinthol", "santoor"]
+CATS = ["sambar masala", "chicken masala", "curd", "ghee", "gingelly oil", "coffee", "semiya", "rava", "appalam",
+        "idli rava", "paneer", "butter milk", "ice cream", "biscuit", "shampoo", "soap", "atta", "dal", "pickle", "dosa mix"]
+BRAND_ITEMS = [f"{b} {c}" for b in BRANDS for c in CATS]
+
 # Products never shown in training: used to test generalisation to new items.
+UNSEEN_BRANDS = {"udhaiyam", "milky mist", "grb", "meera", "santoor", "nijam"}
 UNSEEN = {"badam milk", "gingelly oil", "rasam powder", "besan", "garlic", "marie biscuit", "sprite",
           "medimix soap", "camphor", "honey", "peanut candy", "vermicelli",
           "oats", "jam", "kulfi", "pepper", "umbrella", "eraser", "jigarthanda", "walnuts", "led bulb", "fresh cream"}
@@ -217,6 +226,11 @@ def item_phrase(prod, lang: str, rng: random.Random, catalog: list[str]):
     else:
         base = rng.choice(tl_forms)
     surface, normalized = base, canon
+    if not kind.startswith("sized"):
+        # catalog naming for any item: one catalog product "<canon> <size>" -> use it, flag the assumption
+        sized_in_cat = [c for c in catalog if c.startswith(canon + " ") and c[len(canon) + 1:].rstrip("lgmk").isdigit()]
+        if len(sized_in_cat) == 1 and rng.random() < 0.8:
+            return surface, sized_in_cat[0], ["size assumed from catalog"]
     if kind.startswith("sized"):
         if rng.random() < 0.6:
             size, tl_s, ta_s = rng.choice(SIZES[kind])
@@ -312,6 +326,8 @@ def example(rng: random.Random, products: list, all_canon: list[str]) -> dict:
                 canon, kd = prod[0], prod[3]
                 if kd.startswith("sized") and rng.random() < 0.5:
                     catalog.append(f"{canon} {rng.choice(SIZES[kd])[0]}")
+                elif kd == "drink" and rng.random() < 0.5:
+                    catalog.append(f"{canon} {rng.choice(['200ml', '250ml', '500ml'])}")
                 else:
                     catalog.append(canon)
             t, g, r = make_request_clause(lang, prod, rng, catalog)
@@ -349,8 +365,11 @@ def main() -> None:
     a = ap.parse_args()
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
-    seen = [p for p in P if p[0] not in UNSEEN]
-    unseen = [p for p in P if p[0] in UNSEEN]
+    brand = [(n, [n], [], "plain") for n in BRAND_ITEMS]
+    brand_seen = [p for p in brand if p[0].split(" ")[0] not in UNSEEN_BRANDS and " ".join(p[0].split(" ")[:2]) not in UNSEEN_BRANDS]
+    brand_unseen = [p for p in brand if p not in brand_seen]
+    seen = [p for p in P if p[0] not in UNSEEN] + brand_seen
+    unseen = [p for p in P if p[0] in UNSEEN] + brand_unseen
     all_canon = [p[0] for p in P]
     for name, n, prods, seed in (("train", a.train, seen, a.seed), ("valid", a.valid, seen, a.seed + 1),
                                  ("test_seen", a.test // 2, seen, a.seed + 2), ("test_unseen", a.test // 2, unseen, a.seed + 3)):
