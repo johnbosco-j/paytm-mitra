@@ -4,7 +4,7 @@
 
 | Time | Say | Do |
 |---|---|---|
-| 0:00 | "Every QR in India knows what sold. None of them knows what *didn't*." | Landing page. |
+| 0:00 | "Every QR in India knows what sold. None of them knows what *didn't*." | Open http://localhost:3000 and scroll the **3D story** slowly: the ask, the "illa", the blind QR, the 24 asks piling up. (15 s) |
 | 0:15 | "Murugan runs a kirana in Velachery. A customer asks for mango lassi. He says *illa*. No payment, so no record." | Owner window → **Today**. Point at "16 asks for Mango Lassi". |
 | 0:35 | "He taps once and talks the way he talks." | **Missed demand** → tap mic → say: *"Innaiku ettu per mango lassi ketanga, illa nu sonnen. Rendu peru rose milk kettanga."* Tap again. |
 | 0:55 | "Gemini understood Tanglish. Nothing is saved until he confirms. He can fix anything." | Show transcript, the English gloss and the "matches catalog" badge → **Confirm & save**. |
@@ -15,8 +15,12 @@
 | 2:40 | "The owner approves. MITRA drafts the supplier message in Tamil, and he sends it himself." | Owner window → **Approve** → **Draft in Tamil** → show **Open in WhatsApp** (don't send). |
 | 3:00 | "A week later he records what happened." | **Record stock received** (16 @ ₹22) → Sold **14**, wasted 0 → **Record results**. |
 | 3:15 | "₹182 gross profit. ₹138 cash vs outlay, with 2 bottles still worth ₹44. Predicted 12, actually 14. Every trial teaches the next one." | Point at the result card and Predicted vs actual. |
-| 3:35 | "And he can ask in Tamil." | **Ask MITRA** → tap *"இந்த வாரம் அதிகம் கேட்கப்பட்டது எது?"* |
+| 3:30 | "Next time someone asks for rose milk, he doesn't say illa. He takes a pre-order." | **Pre-orders** → item Rose Milk, qty 2, name, phone (tick consent), **UPI QR** → the QR appears; the phone shows masked. |
+| 3:45 | "And it works without internet, on our own model." | **Store & settings → AI mode → Offline only** → type a note on Missed demand → badge reads `mitra-lite`. |
+| 3:55 | "And he can ask in Tamil." | **Ask MITRA** → tap *"இந்த வாரம் அதிகம் கேட்கப்பட்டது எது?"* |
 | 3:50 | "The Soundbox tells you what sold. MITRA tells you what you missed. Plugged into Paytm's merchant app and Soundbox, every merchant gets it." | Close slide. |
+
+Before the demo: set the shop UPI ID in Settings to **your own** UPI ID (never a placeholder), start `scripts/dev-ml.sh` for offline mode, and re-run the seed.
 
 ## Fallbacks (rehearse each once)
 
