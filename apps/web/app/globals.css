@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+/* MITRA design tokens — "Signal / Velocity / Confidence" (docs/07) */
+:root {
+  /* MITRA app tokens, in the Paytm for Business design language (light, navy + Paytm blue). */
+  --canvas: #f3f6fa;
+  --surface: #ffffff;
+  --raised: #f2f6fb;
+  --line: #e4eaf2;
+  --text: #0f1b2d;
+  --muted: #5a6577;
+  --faint: #8b95a7;
+  --signal: #00baf2;
+  --navy: #002e6e;
+  --success: #12a150;
+  --caution: #e08600;
+  --risk: #e5383b;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-raised: var(--raised);
+  --color-line: var(--line);
+  --color-ink: var(--text);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-signal: var(--signal);
+  --color-navy: var(--navy);
+  --color-success: var(--success);
+  --color-caution: var(--caution);
+  --color-risk: var(--risk);
+  --font-sans: var(--font-inter), var(--font-tamil), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  background: var(--canvas);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.grid-bg {
+  background-image: radial-gradient(circle at 1px 1px, rgba(0, 46, 110, 0.06) 1px, transparent 0);
+  background-size: 22px 22px;
+}
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(239, 110, 113, 0.55); }
+  100% { box-shadow: 0 0 0 22px rgba(239, 110, 113, 0); }
+}
+.recording {
+  animation: pulse-ring 1.2s ease-out infinite;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.rise {
+  animation: rise 220ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recording, .rise { animation: none; }
+}
+
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 2px;
+}
+
+@keyframes loader {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}

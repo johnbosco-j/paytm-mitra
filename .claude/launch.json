@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "mitra-api",
+      "runtimeExecutable": "/Users/ishowbosco/Paytm/LEAP_AI_Claude_Code_Blueprint/scripts/dev-api.sh",
+      "runtimeArgs": [],
+      "port": 8000
+    },
+    {
+      "name": "mitra-web",
+      "runtimeExecutable": "/Users/ishowbosco/Paytm/LEAP_AI_Claude_Code_Blueprint/scripts/dev-web.sh",
+      "runtimeArgs": [],
+      "port": 3000
+    },
+    {
+      "name": "mitra-ml",
+      "runtimeExecutable": "/Users/ishowbosco/Paytm/LEAP_AI_Claude_Code_Blueprint/scripts/dev-ml.sh",
+      "runtimeArgs": [],
+      "port": 8090
+    }
+  ]
+}

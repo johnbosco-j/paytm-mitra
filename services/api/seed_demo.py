@@ -1,0 +1,148 @@
+"""Seed a SAMPLE demo store (all demand rows are labeled source_type='sample_seed' and shown with a SAMPLE badge).
+
+Usage:  .venv/bin/python seed_demo.py          (idempotent: wipes and recreates only the demo accounts' store)
+
+Demo logins (local/test only):
+  owner  demo.owner@mitra.test / mitra-demo-2026
+  staff  demo.staff@mitra.test / mitra-demo-2026
+"""
+
+from datetime import UTC, datetime, timedelta, timezone
+from decimal import Decimal
+
+from sqlalchemy import delete, select
+
+from app.db import SessionLocal
+from app.models import AuditEvent, DemandRequest, IdempotencyRecord, Membership, Product, StockMovement, Store, Trial, User
+from app.security import hash_password
+
+OWNER = ("demo.owner@mitra.test", "Murugan K")
+STAFF = ("demo.staff@mitra.test", "Ravi (staff)")
+PASSWORD = "mitra-demo-2026"  # local demo only
+IST = timezone(timedelta(hours=5, minutes=30))
+
+PRODUCTS = [
+    # name, aliases, category, unit, cost, price, stock, shelf_life, supplier
+    ("Mango Lassi 200ml", ["mango lassi", "lassi", "மாம்பழ லஸ்ஸி"], "beverages", "bottle", "22", "35", 0, 5, "Sri Balaji Dairy"),
+    ("Amul Butter 100g", ["amul butter", "butter", "வெண்ணெய்"], "dairy", "pack", "52", "58", 0, 30, "Ganesh Agencies"),
+    ("Aavin Milk 500ml", ["aavin milk", "milk", "பால்"], "dairy", "pouch", "21", "24", 30, 2, "Aavin booth"),
+    ("Parle-G 100g", ["parle g", "biscuit"], "snacks", "pack", "8", "10", 60, 180, "Ganesh Agencies"),
+    ("Bovonto 600ml", ["bovonto"], "beverages", "bottle", "28", "40", 12, 120, "Kalimark distributor"),
+    ("Filter Coffee Powder 200g", ["coffee powder", "filter coffee"], "staples", "pack", "95", "120", 0, 90, None),
+]
+
+# item, ask counts per day offset (0 = today ... 6 = six days ago), reason
+DEMAND = [
+    ("mango lassi", {1: 3, 2: 4, 3: 2, 4: 3, 5: 2, 6: 2}, "not_stocked"),  # 16 seeded; demo adds 8 live -> 24
+    ("amul butter 100g", {0: 1, 1: 2, 3: 2, 4: 1, 6: 1}, "out_of_stock"),
+    ("rose milk", {1: 2, 2: 1, 4: 2, 5: 1}, "not_stocked"),  # no product -> "needs cost"
+    ("filter coffee powder 200g", {2: 1, 5: 1}, "out_of_stock"),  # too little evidence
+    ("bovonto 600ml", {3: 1}, "variant_missing"),
+]
+
+
+def run() -> None:
+    db = SessionLocal()
+    try:
+        users = {}
+        for email, name in (OWNER, STAFF):
+            u = db.scalar(select(User).where(User.email == email))
+            if not u:
+                u = User(email=email, name=name, password_hash=hash_password(PASSWORD))
+                db.add(u)
+                db.flush()
+            users[email] = u
+        owner, staff = users[OWNER[0]], users[STAFF[0]]
+        # remove previous demo store(s) owned by the demo owner
+        for m in db.scalars(select(Membership).where(Membership.user_id == owner.id, Membership.role == "owner")).all():
+            sid = m.store_id
+            for model in (AuditEvent, StockMovement, DemandRequest, Trial, IdempotencyRecord):
+                db.execute(delete(model).where(model.store_id == sid))
+            db.execute(delete(Product).where(Product.store_id == sid))
+            db.execute(delete(Membership).where(Membership.store_id == sid))
+            db.execute(delete(Store).where(Store.id == sid))
+        db.flush()
+
+        store = Store(
+            name="Murugan Stores", city="Velachery, Chennai", category="kirana", language="ta", trial_budget=Decimal("2000")
+        )
+        db.add(store)
+        db.flush()
+        db.add_all(
+            [
+                Membership(store_id=store.id, user_id=owner.id, role="owner"),
+                Membership(store_id=store.id, user_id=staff.id, role="staff"),
+            ]
+        )
+        products = {}
+        for name, aliases, cat, unit, cost, price, stock, shelf, supplier in PRODUCTS:
+            p = Product(
+                store_id=store.id,
+                name=name,
+                aliases=aliases,
+                category=cat,
+                unit=unit,
+                cost_price=Decimal(cost),
+                sell_price=Decimal(price),
+                stock_qty=stock,
+                shelf_life_days=shelf,
+                supplier_name=supplier,
+                source_type="sample_seed",
+            )
+            db.add(p)
+            db.flush()
+            products[name.lower()] = p
+            if stock:
+                db.add(
+                    StockMovement(
+                        store_id=store.id,
+                        product_id=p.id,
+                        kind="adjustment",
+                        qty_delta=stock,
+                        unit_cost=p.cost_price,
+                        reference_type="opening_stock",
+                        created_by=owner.id,
+                    )
+                )
+        today = datetime.now(IST).replace(hour=0, minute=0, second=0, microsecond=0)
+        for item, per_day, reason in DEMAND:
+            pid = next(
+                (p.id for p in products.values() if item in [a.lower() for a in p.aliases] or item == p.name.lower()), None
+            )
+            for offset, count in per_day.items():
+                for i in range(count):
+                    when = today - timedelta(days=offset) + timedelta(hours=10 + (i * 3) % 10, minutes=7 * i)
+                    if when > datetime.now(IST):
+                        when = datetime.now(IST) - timedelta(minutes=30 + i)
+                    db.add(
+                        DemandRequest(
+                            store_id=store.id,
+                            raw_item=item,
+                            normalized_item=item,
+                            ask_count=1,
+                            reason=reason,
+                            product_id=pid,
+                            source_type="sample_seed",
+                            extractor="seed",
+                            requested_at=when.astimezone(UTC),
+                            created_by=staff.id if i % 2 else owner.id,
+                        )
+                    )
+        db.add(
+            AuditEvent(
+                store_id=store.id,
+                actor_id=owner.id,
+                action="store.seeded",
+                entity_type="store",
+                entity_id=store.id,
+                summary="SAMPLE data loaded for demo (labeled sample_seed)",
+            )
+        )
+        db.commit()
+        print(f"Seeded SAMPLE store {store.name} ({store.id}). Owner {OWNER[0]}, staff {STAFF[0]}; password in this file.")
+    finally:
+        db.close()
+
+
+if __name__ == "__main__":
+    run()

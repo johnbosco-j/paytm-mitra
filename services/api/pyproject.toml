@@ -1,0 +1,16 @@
+[project]
+name = "mitra-api"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 130
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "I", "UP", "RUF"]
+ignore = ["B008", "RUF001", "RUF002", "RUF003", "E501"]  # B008: FastAPI Depends() idiom; RUF00x: ₹ and Tamil text are intentional
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "tests"]

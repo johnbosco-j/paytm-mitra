@@ -1,0 +1,17 @@
+{
+  "model": "models/qwen2.5-1.5b-instruct",
+  "adapter": null,
+  "results": {
+    "handwritten": {
+      "n": 40,
+      "json_valid": 0.975,
+      "item_precision": 0.262,
+      "item_recall": 0.275,
+      "item_f1": 0.268,
+      "count_exact": 0.455,
+      "reason_acc": 0.545,
+      "negatives_correct": "1/4",
+      "latency_p50_s": 4.9
+    }
+  }
+}

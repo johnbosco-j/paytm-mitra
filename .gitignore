@@ -1,0 +1,22 @@
+# Python
+services/api/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+services/api/*.db
+services/api/.env
+# Node
+apps/web/node_modules/
+apps/web/.next/
+apps/web/.env*.local
+# OS
+.DS_Store
+# ML (large/generated; reproducible with services/ml/README.md)
+services/ml/.venv/
+services/ml/models/
+services/ml/adapters/
+services/ml/data/
+services/ml/reports/train.log
+# Next build output
+apps/web/.next-build/
+*.log
