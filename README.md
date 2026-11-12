@@ -16,6 +16,7 @@ When a customer asks *"mango lassi irukka?"* and the shop says *"illa"*, no paym
 | **Merchant app** (`/app`) | Paytm-for-Business-style UI (navy + Paytm blue, icon tiles, raised centre **Speak** button on mobile): Today, Missed demand, Opportunities, Trials, **Pre-orders**, Catalog, Ask MITRA, Activity, Store & settings. Tamil/English. |
 | **Pre-orders** | Turn a missed ask into a reserved sale: Paytm Payment Link (staging, official `paytmchecksum` signing, enabled when you add your MID/key), UPI QR from the shop's UPI ID, or pay later. Customer phone encrypted (Fernet), masked in lists, owner-only audited reveal, consent required. |
 | **MITRA-Lite** (`services/ml`) | Our own LoRA fine-tune of Qwen2.5-1.5B on Apple MLX for Tamil/Tanglish/English extraction. Runs offline; **Settings → AI mode → Offline only**. See `services/ml/README.md`. |
+| **MITRA MCP server** | `services/api/mitra_mcp.py`: read-only MCP tools (`missed_demand`, `opportunities`, `trial_results`, `ask_mitra`) so AI assistants or agents can use a store's insights through the same authenticated, tenant-scoped API. Paytm's own MCP server repo wasn't publicly available, so MITRA exposes its own. |
 | **Animated pitch deck** | `pitch/Paytm_MITRA_Pitch.pptx`: 12 slides covering the 7 required sections, cinematic frames from the 3D story, Morph transitions and auto-playing entrance animations (`pitch/build_deck.js` + `pitch/animate.py`). |
 
 ## What works today (all real, persisted, tested)

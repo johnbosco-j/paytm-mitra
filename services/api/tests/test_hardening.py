@@ -1,5 +1,6 @@
-from app.hardening import login_limiter, signup_limiter
 from conftest import new_client, signup
+
+from app.hardening import login_limiter, signup_limiter
 
 
 def setup_function():
@@ -37,7 +38,9 @@ def test_logout_all_revokes_sessions(client):
 
 
 def test_cross_origin_post_blocked(client):
-    r = client.post("/api/auth/login", json={"email": "x@example.com", "password": "y"}, headers={"Origin": "https://evil.example"})
+    r = client.post(
+        "/api/auth/login", json={"email": "x@example.com", "password": "y"}, headers={"Origin": "https://evil.example"}
+    )
     assert r.status_code == 403 and r.json()["code"] == "BAD_ORIGIN"
 
 

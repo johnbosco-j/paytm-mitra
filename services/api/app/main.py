@@ -27,6 +27,7 @@ from . import ai, paytm
 from . import economics as econ
 from .config import get_settings
 from .db import Base, engine, get_db
+from .hardening import COMMON_PASSWORDS, OriginGuard, SecurityHeaders, client_ip, login_limiter, signup_limiter
 from .models import (
     AuditEvent,
     DemandRequest,
@@ -39,7 +40,6 @@ from .models import (
     User,
     utcnow,
 )
-from .hardening import COMMON_PASSWORDS, OriginGuard, SecurityHeaders, client_ip, login_limiter, signup_limiter
 from .opportunities import compute_opportunities, match_product, normalize_item
 from .security import (
     COOKIE_NAME,
@@ -299,7 +299,11 @@ def login(body: LoginIn, request: Request, response: Response, db: Session = Dep
         raise api_error(429, "RATE_LIMITED", "Too many attempts. Wait a minute and try again.")
     user = db.scalar(select(User).where(User.email == email))
     now = utcnow()
-    if user and user.locked_until and (user.locked_until if user.locked_until.tzinfo else user.locked_until.replace(tzinfo=UTC)) > now:
+    if (
+        user
+        and user.locked_until
+        and (user.locked_until if user.locked_until.tzinfo else user.locked_until.replace(tzinfo=UTC)) > now
+    ):
         raise api_error(423, "ACCOUNT_LOCKED", "Too many wrong passwords. This account is locked for a few minutes.")
     if not user or not verify_password(body.password, user.password_hash):
         if user:
@@ -361,7 +365,9 @@ class StorePatch(BaseModel):
     city: str | None = Field(default=None, max_length=80)
     language: Literal["ta", "en", "hi"] | None = None
     trial_budget: Decimal | None = Field(default=None, ge=0, max_digits=12, decimal_places=2)
-    upi_vpa: Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^[a-zA-Z0-9._-]{2,64}@[a-zA-Z]{2,32}$")] | None = None
+    upi_vpa: Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^[a-zA-Z0-9._-]{2,64}@[a-zA-Z]{2,32}$")] | None = (
+        None
+    )
     ai_mode: Literal["auto", "offline"] | None = None
 
 
@@ -620,8 +626,13 @@ async def extract_demand(
         raise api_error(422, "INVALID_INPUT", "Note is too long (max 2000 characters).")
     products = db.scalars(select(Product).where(Product.store_id == ctx.store.id)).all()
     try:
-        res = ai.extract_requests(mode=ctx.store.ai_mode or "auto", 
-            text=text, audio=blob, audio_mime=mime, catalog_names=[p.name for p in products], language_hint=ctx.store.language
+        res = ai.extract_requests(
+            mode=ctx.store.ai_mode or "auto",
+            text=text,
+            audio=blob,
+            audio_mime=mime,
+            catalog_names=[p.name for p in products],
+            language_hint=ctx.store.language,
         )
     except ai.ProviderUnavailable as e:
         raise api_error(503, "PROVIDER_UNAVAILABLE", str(e)) from e

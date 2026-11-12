@@ -66,12 +66,15 @@ def _post(path: str, body: dict) -> dict:
     info = (data.get("body") or {}).get("resultInfo") or {}
     if r.status_code != 200 or info.get("resultStatus") not in ("SUCCESS", "S"):
         log.warning("paytm %s failed code=%s", path, info.get("resultCode"))
-        raise PaytmUnavailable(f"Paytm: {info.get('resultMessage') or 'request failed'} ({info.get('resultCode', r.status_code)})")
+        raise PaytmUnavailable(
+            f"Paytm: {info.get('resultMessage') or 'request failed'} ({info.get('resultCode', r.status_code)})"
+        )
     return data["body"]
 
 
-def create_link(*, amount: Decimal, name: str, description: str, order_ref: str, customer_name: str | None,
-                customer_mobile: str | None) -> PaymentLink:
+def create_link(
+    *, amount: Decimal, name: str, description: str, order_ref: str, customer_name: str | None, customer_mobile: str | None
+) -> PaymentLink:
     s = get_settings()
     body: dict = {
         "mid": s.paytm_mid,
@@ -91,8 +94,12 @@ def create_link(*, amount: Decimal, name: str, description: str, order_ref: str,
     if customer_mobile:
         body["customerContact"] = {"customerName": (customer_name or "Customer")[:40], "customerMobile": customer_mobile}
     out = _post("/link/create", body)
-    return PaymentLink(link_id=str(out.get("linkId")), short_url=out.get("shortUrl") or "", status="awaiting_payment",
-                       raw_status=str(out.get("status", "")))
+    return PaymentLink(
+        link_id=str(out.get("linkId")),
+        short_url=out.get("shortUrl") or "",
+        status="awaiting_payment",
+        raw_status=str(out.get("status", "")),
+    )
 
 
 def fetch_paid(link_id: str) -> bool:

@@ -33,10 +33,22 @@ TRANSITIONS = {
 
 def s_preorder(p: PreOrder) -> dict:
     return {
-        "id": p.id, "item": p.item, "product_id": p.product_id, "quantity": p.quantity, "amount": str(econ.money(p.amount)),
-        "customer_name": p.customer_name, "phone": p.phone_masked, "consent_contact": p.consent_contact, "method": p.method,
-        "status": p.status, "pay_url": p.pay_url, "order_ref": p.order_ref, "paytm_link_id": p.paytm_link_id,
-        "created_at": (p.created_at if p.created_at.tzinfo else p.created_at.replace(tzinfo=__import__("datetime").UTC)).isoformat(),
+        "id": p.id,
+        "item": p.item,
+        "product_id": p.product_id,
+        "quantity": p.quantity,
+        "amount": str(econ.money(p.amount)),
+        "customer_name": p.customer_name,
+        "phone": p.phone_masked,
+        "consent_contact": p.consent_contact,
+        "method": p.method,
+        "status": p.status,
+        "pay_url": p.pay_url,
+        "order_ref": p.order_ref,
+        "paytm_link_id": p.paytm_link_id,
+        "created_at": (
+            p.created_at if p.created_at.tzinfo else p.created_at.replace(tzinfo=__import__("datetime").UTC)
+        ).isoformat(),
     }
 
 
@@ -81,12 +93,20 @@ def list_preorders(ctx: StoreContext = Depends(store_context), db: Session = Dep
 
 
 @router.post("/preorders", status_code=201)
-def create_preorder(body: PreOrderIn, ctx: StoreContext = Depends(store_context), db: Session = Depends(get_db),
-                    idempotency_key: str | None = Header(None)):
+def create_preorder(
+    body: PreOrderIn,
+    ctx: StoreContext = Depends(store_context),
+    db: Session = Depends(get_db),
+    idempotency_key: str | None = Header(None),
+):
     if idempotency_key:
-        prev = db.scalar(select(IdempotencyRecord).where(IdempotencyRecord.store_id == ctx.store.id,
-                                                         IdempotencyRecord.action == "preorder.create",
-                                                         IdempotencyRecord.key == idempotency_key))
+        prev = db.scalar(
+            select(IdempotencyRecord).where(
+                IdempotencyRecord.store_id == ctx.store.id,
+                IdempotencyRecord.action == "preorder.create",
+                IdempotencyRecord.key == idempotency_key,
+            )
+        )
         if prev:
             return prev.response
     if body.phone and not body.consent_contact:
@@ -104,27 +124,51 @@ def create_preorder(body: PreOrderIn, ctx: StoreContext = Depends(store_context)
         raise api_error(422, "NO_PRICE", "Add a selling price for this item (or enter one) before taking a pre-order.")
     amount = econ.money(Decimal(body.quantity) * unit)
     ref = "MITRA" + secrets.token_hex(6).upper()
-    pre = PreOrder(store_id=ctx.store.id, product_id=product.id if product else None, item=normalize_item(product.name if product else body.item),
-                   quantity=body.quantity, amount=amount, customer_name=body.customer_name.strip(),
-                   phone_enc=pii.encrypt(body.phone) if body.phone else None,
-                   phone_masked=pii.mask_phone(body.phone) if body.phone else None, consent_contact=body.consent_contact,
-                   method=body.method, order_ref=ref, created_by=ctx.user.id)
+    pre = PreOrder(
+        store_id=ctx.store.id,
+        product_id=product.id if product else None,
+        item=normalize_item(product.name if product else body.item),
+        quantity=body.quantity,
+        amount=amount,
+        customer_name=body.customer_name.strip(),
+        phone_enc=pii.encrypt(body.phone) if body.phone else None,
+        phone_masked=pii.mask_phone(body.phone) if body.phone else None,
+        consent_contact=body.consent_contact,
+        method=body.method,
+        order_ref=ref,
+        created_by=ctx.user.id,
+    )
     if body.method == "paytm_link":
         try:
-            link = paytm.create_link(amount=amount, name=ctx.store.name, description=f"Pre-order: {body.quantity} × {pre.item}",
-                                     order_ref=ref, customer_name=body.customer_name, customer_mobile=body.phone)
+            link = paytm.create_link(
+                amount=amount,
+                name=ctx.store.name,
+                description=f"Pre-order: {body.quantity} × {pre.item}",
+                order_ref=ref,
+                customer_name=body.customer_name,
+                customer_mobile=body.phone,
+            )
         except paytm.PaytmUnavailable as e:
             raise api_error(503, "PAYTM_UNAVAILABLE", str(e)) from e
         pre.paytm_link_id, pre.pay_url = link.link_id, link.short_url
     elif body.method == "upi_qr":
         if not ctx.store.upi_vpa:
             raise api_error(422, "UPI_NOT_SET", "Add your shop's UPI ID in Store settings to show a payment QR.")
-        pre.pay_url = (f"upi://pay?pa={quote(ctx.store.upi_vpa)}&pn={quote(ctx.store.name)}&am={amount:.2f}&cu=INR"
-                       f"&tn={quote('Pre-order ' + ref)}&tr={ref}")
+        pre.pay_url = (
+            f"upi://pay?pa={quote(ctx.store.upi_vpa)}&pn={quote(ctx.store.name)}&am={amount:.2f}&cu=INR"
+            f"&tn={quote('Pre-order ' + ref)}&tr={ref}"
+        )
     db.add(pre)
     db.flush()
-    audit(db, ctx, "preorder.created", "preorder", pre.id, f"Pre-order {pre.quantity} × {pre.item} for ₹{amount} via {body.method}",
-          {"method": body.method})
+    audit(
+        db,
+        ctx,
+        "preorder.created",
+        "preorder",
+        pre.id,
+        f"Pre-order {pre.quantity} × {pre.item} for ₹{amount} via {body.method}",
+        {"method": body.method},
+    )
     out = s_preorder(pre)
     if idempotency_key:
         db.add(IdempotencyRecord(store_id=ctx.store.id, action="preorder.create", key=idempotency_key[:80], response=out))
@@ -155,8 +199,18 @@ def set_status(pid: str, body: StatusIn, ctx: StoreContext = Depends(store_conte
         if prod.stock_qty < p.quantity:
             raise api_error(422, "NEGATIVE_STOCK", f"Only {prod.stock_qty} {prod.unit} in stock. Receive stock first.")
         prod.stock_qty -= p.quantity
-        db.add(StockMovement(store_id=ctx.store.id, product_id=prod.id, kind="sale", qty_delta=-p.quantity, unit_cost=prod.cost_price,
-                             reference_type="preorder", reference_id=p.id, created_by=ctx.user.id))
+        db.add(
+            StockMovement(
+                store_id=ctx.store.id,
+                product_id=prod.id,
+                kind="sale",
+                qty_delta=-p.quantity,
+                unit_cost=prod.cost_price,
+                reference_type="preorder",
+                reference_id=p.id,
+                created_by=ctx.user.id,
+            )
+        )
     p.status = body.status
     audit(db, ctx, f"preorder.{body.status}", "preorder", p.id, f"Pre-order {p.order_ref} marked {body.status}")
     db.commit()

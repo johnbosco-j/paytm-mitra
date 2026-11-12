@@ -40,7 +40,9 @@ class OriginGuard(BaseHTTPMiddleware):
                 allowed.add(request.headers.get("host", ""))
                 allowed.add(request.headers.get("x-forwarded-host", ""))
                 if host not in allowed:
-                    return JSONResponse(status_code=403, content={"code": "BAD_ORIGIN", "message": "Request blocked: unexpected origin."})
+                    return JSONResponse(
+                        status_code=403, content={"code": "BAD_ORIGIN", "message": "Request blocked: unexpected origin."}
+                    )
         return await call_next(request)
 
 
@@ -69,10 +71,22 @@ login_limiter = RateLimiter(limit=8, window_s=60)
 signup_limiter = RateLimiter(limit=5, window_s=600)
 ai_limiter = RateLimiter(limit=40, window_s=60)
 
-COMMON_PASSWORDS = {"password", "password1", "password123", "12345678", "123456789", "qwerty123", "iloveyou", "admin123",
-                    "welcome1", "paytm123", "11111111", "abc12345"}
+COMMON_PASSWORDS = {
+    "password",
+    "password1",
+    "password123",
+    "12345678",
+    "123456789",
+    "qwerty123",
+    "iloveyou",
+    "admin123",
+    "welcome1",
+    "paytm123",
+    "11111111",
+    "abc12345",
+}
 
 
 def client_ip(request: Request) -> str:
     fwd = request.headers.get("x-forwarded-for")
-    return (fwd.split(",")[0].strip() if fwd else (request.client.host if request.client else "unknown"))
+    return fwd.split(",")[0].strip() if fwd else (request.client.host if request.client else "unknown")
