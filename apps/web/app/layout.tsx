@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   title: "MITRA for Paytm merchants · Missed-demand Intelligence",
   description:
     "MITRA hears the sales your QR never sees. Capture missed customer requests in Tamil or English, see profit-aware stocking trials, approve and prove results.",
+  appleWebApp: { capable: true, title: "MITRA", statusBarStyle: "default" },
+  icons: { icon: "/icon-192.png", apple: "/icon-192.png" },
 };
 
 export const viewport: Viewport = { themeColor: "#002e6e", width: "device-width", initialScale: 1 };

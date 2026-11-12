@@ -69,6 +69,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
       /* ignore */
     }
     void refreshMe();
+    // installable, offline-capable app shell (production builds; dev keeps hot reload uncached)
+    if ("serviceWorker" in navigator && process.env.NODE_ENV === "production") void navigator.serviceWorker.register("/sw.js").catch(() => null);
   }, [refreshMe]);
 
   const setLang = useCallback((l: Lang) => {
