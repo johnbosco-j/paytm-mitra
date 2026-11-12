@@ -206,13 +206,20 @@ async function icon(name, color = C.blue, size = 256) {
     const base = metrics?.baseline?.item_f1 ?? 0.268;
     const tuned = metrics?.tuned?.item_f1 ?? null;
     if (tuned != null) {
-      s.addChart(pres.charts.BAR, [{ name: "Item F1", labels: ["Base model", "MITRA-Lite"], values: [Math.round(base * 100), Math.round(tuned * 100)] }], {
-        x: 4.5, y: 1.55, w: 5, h: 3.1, barDir: "col", showTitle: true, title: "Item accuracy (F1 %) on 40 hand-written shop notes", titleColor: C.white, titleFontSize: 12, titleFontFace: "+mn-lt",
-        chartColors: ["35517F", C.teal], showValue: true, dataLabelPosition: "outEnd", dataLabelColor: C.white, dataLabelFontSize: 14, dataLabelFontFace: "+mn-lt", dataLabelFormatCode: "0\"%\"",
-        catAxisLabelColor: C.mist, catAxisLabelFontSize: 12, catAxisLabelFontFace: "+mn-lt", valAxisHidden: true, valAxisMaxVal: 100, valAxisMinVal: 0, valGridLine: { style: "none" }, catGridLine: { style: "none" }, showLegend: false, barGapWidthPct: 70,
+      const pct = (v) => Math.round(v * 100);
+      const neg = (x) => { const [a, b] = String(x).split("/").map(Number); return b ? Math.round((a / b) * 100) : 0; };
+      const labels = ["Ask count exact", "Reason correct", "Ignores injections", "Item name (strict)"];
+      s.addChart(pres.charts.BAR, [
+        { name: "Base Qwen2.5-1.5B", labels, values: [pct(metrics.baseline.count_exact), pct(metrics.baseline.reason_acc), neg(metrics.baseline.negatives_correct), pct(base)] },
+        { name: "MITRA-Lite (ours)", labels, values: [pct(metrics.tuned.count_exact), pct(metrics.tuned.reason_acc), neg(metrics.tuned.negatives_correct), pct(tuned)] },
+      ], {
+        x: 4.4, y: 1.5, w: 5.1, h: 3.2, barDir: "col", barGrouping: "clustered", showTitle: true, title: "40 hand-written shop notes it never saw (%)", titleColor: C.white, titleFontSize: 12, titleFontFace: "+mn-lt",
+        chartColors: ["35517F", C.teal], showValue: true, dataLabelPosition: "outEnd", dataLabelColor: C.white, dataLabelFontSize: 10, dataLabelFontFace: "+mn-lt",
+        catAxisLabelColor: C.mist, catAxisLabelFontSize: 9, catAxisLabelFontFace: "+mn-lt", valAxisHidden: true, valAxisMaxVal: 110, valAxisMinVal: 0, valGridLine: { style: "none" }, catGridLine: { style: "none" },
+        showLegend: true, legendPos: "b", legendColor: C.mist, legendFontSize: 10, legendFontFace: "+mn-lt", barGapWidthPct: 60,
         objectName: nm("wipe", 5),
       });
-      txt(s, metrics.note || "", 6, { x: 4.5, y: 4.7, w: 5, h: 0.4, fontSize: 9, color: "7D93B5", fx: "fade" });
+      txt(s, "Strict exact-name scoring; trained on synthetic notes. Code then strips any size the model invents.", 6, { x: 4.4, y: 4.75, w: 5.1, h: 0.3, fontSize: 9, color: "7D93B5", fx: "fade" });
     } else {
       card(s, 4.5, 1.6, 5, 3, 5);
       txt(s, [{ text: `Base model item F1: ${Math.round(base * 100)}%`, options: { bold: true, color: C.white, fontSize: 18, breakLine: true } },

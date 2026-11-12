@@ -163,3 +163,17 @@ def test_rule_extractor_never_guesses_count():
     res = rule_based_extract("customers asked for filter coffee powder")
     assert res.requests[0]["ask_count"] is None
     assert "count not mentioned" in res.requests[0]["uncertainties"]
+
+
+def test_size_guard_strips_invented_sizes():
+    from app.ai import guard_sizes
+
+    reqs = [
+        {"normalized_item": "rose milk 100ml", "uncertainties": [], "requires_review": False},
+        {"normalized_item": "aavin milk 500ml", "uncertainties": [], "requires_review": False},
+        {"normalized_item": "mango lassi 200ml", "uncertainties": [], "requires_review": False},
+    ]
+    out = guard_sizes(reqs, "rendu per rose milk, moonu per arai litre aavin paal, ettu per mango lassi", ["mango lassi 200ml"])
+    assert out[0]["normalized_item"] == "rose milk" and "size not mentioned" in out[0]["uncertainties"]
+    assert out[1]["normalized_item"] == "aavin milk 500ml"  # "arai litre" was said
+    assert out[2]["normalized_item"] == "mango lassi 200ml"  # the shop's own catalog name

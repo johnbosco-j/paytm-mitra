@@ -273,7 +273,7 @@ def _text_chain(text: str, catalog_names: list[str], cloud_ok: bool) -> Extracti
         return res
 
 
-def extract_requests(
+def _extract_requests_raw(
     text: str | None = None,
     audio: bytes | None = None,
     audio_mime: str = "audio/wav",
@@ -456,3 +456,52 @@ def supplier_message(order: dict, language: str) -> tuple[str, str]:
     else:
         msg = f"Hello, this is {store}. I need {qty} {order.get('unit', '')} of {item}. Please share your price per unit and the earliest delivery date. Thank you."
     return msg, "template-v1"
+
+
+# ---------- deterministic guard: a size may appear only if the note says it (or the shop's catalog defines it)
+
+_SIZE_RE = re.compile(r"\s*\b(\d+(?:\.\d+)?)\s?(ml|l|g|kg)\b\s*$", re.I)
+_SIZE_PHRASES = {
+    "500ml": ["half litre", "arai litre", "அரை லிட்டர்", "500"],
+    "1l": ["oru litre", "1 litre", "one litre", "ஒரு லிட்டர்"],
+    "2l": ["2 litre", "periya bottle", "big bottle", "பெரிய பாட்டில்", "இரண்டு லிட்டர்"],
+    "250ml": ["chinna bottle", "small bottle", "சின்ன பாட்டில்", "250"],
+    "500g": ["arai kilo", "half kilo", "அரை கிலோ", "500"],
+    "1kg": ["oru kilo", "1 kilo", "one kilo", "ஒரு கிலோ"],
+    "5kg": ["anju kilo", "5 kilo", "five kilo", "ஐந்து கிலோ", "அஞ்சு கிலோ"],
+    "25kg": ["25 kilo", "25 கிலோ"],
+}
+
+
+def guard_sizes(requests: list[dict], note: str, catalog_names: list[str]) -> list[dict]:
+    """Strip any size the model added that the merchant never said, unless it is the shop's own catalog name."""
+    text = (note or "").lower()
+    catalog = {c.strip().lower() for c in catalog_names}
+    for r in requests:
+        name = r["normalized_item"]
+        m = _SIZE_RE.search(name)
+        if not m or name in catalog:
+            continue
+        size = (m.group(1) + m.group(2)).lower()
+        said = m.group(1) in re.findall(r"\d+(?:\.\d+)?", text) or any(p in text for p in _SIZE_PHRASES.get(size, []))
+        if not said:
+            r["normalized_item"] = name[: m.start()].strip()
+            unc = [u for u in r.get("uncertainties", []) if u != "size not mentioned"]
+            r["uncertainties"] = [*unc, "size not mentioned"]
+            r["requires_review"] = True
+    return requests
+
+
+def extract_requests(
+    text: str | None = None,
+    audio: bytes | None = None,
+    audio_mime: str = "audio/wav",
+    catalog_names: list[str] | None = None,
+    language_hint: str = "ta",
+    mode: str = "auto",
+) -> ExtractionResult:
+    res = _extract_requests_raw(
+        text=text, audio=audio, audio_mime=audio_mime, catalog_names=catalog_names, language_hint=language_hint, mode=mode
+    )
+    res.requests = guard_sizes(res.requests, (text or "") + " " + (res.transcript or ""), catalog_names or [])
+    return res
