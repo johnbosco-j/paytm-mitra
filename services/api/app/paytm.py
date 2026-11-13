@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import time
 from dataclasses import dataclass
 from decimal import Decimal
@@ -79,8 +80,9 @@ def create_link(
     body: dict = {
         "mid": s.paytm_mid,
         "linkType": "FIXED",
-        "linkName": name[:30] or "MITRA",
-        "linkDescription": description[:120],
+        # Paytm rejects special characters in names and limits descriptions to 3-30 chars
+        "linkName": re.sub(r"[^A-Za-z0-9]", "", name)[:30] or "MITRA",
+        "linkDescription": (re.sub(r"[^A-Za-z0-9 ]", " ", description).strip()[:30] or "MITRA preorder").ljust(3, "."),
         "amount": f"{amount:.2f}",
         "merchantRequestId": order_ref[:50],
         "linkOrderId": order_ref[:50],

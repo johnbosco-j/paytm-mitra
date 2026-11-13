@@ -30,8 +30,9 @@
   --color-success: var(--success);
   --color-caution: var(--caution);
   --color-risk: var(--risk);
-  --font-sans: var(--font-inter), var(--font-tamil), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: var(--font-gsans), -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Tamil Sangam MN", system-ui, sans-serif;
+  --font-display: var(--font-gflex), var(--font-gsans), -apple-system, "SF Pro Display", system-ui, sans-serif;
+  --font-mono: var(--font-gcode), "SF Mono", ui-monospace, monospace;
 }
 
 html {
@@ -81,4 +82,14 @@ body {
 @keyframes loader {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(200%); }
+}
+
+/* Display headlines: Google Sans Flex, wide + rounded for warmth */
+.font-display, h1 {
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 112, "ROND" 60;
+  letter-spacing: -0.02em;
+}
+.num {
+  font-family: var(--font-gcode), var(--font-gsans), "SF Mono", monospace;
 }

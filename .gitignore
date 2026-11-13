@@ -22,3 +22,4 @@ apps/web/.next-build/
 *.log
 services/ml/data_v2/
 services/ml/reports/*.log
+assets/blender/vendor/

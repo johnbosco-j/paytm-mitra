@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Geist_Mono, Inter, Noto_Sans_Tamil } from "next/font/google";
+import { Google_Sans, Google_Sans_Code, Google_Sans_Flex } from "next/font/google";
 import "./globals.css";
+
+// Google's own typefaces (served by Google Fonts) with Apple's SF Pro as the native fallback on Apple devices.
+const gsans = Google_Sans({ variable: "--font-gsans", subsets: ["latin", "tamil"], weight: ["400", "500", "600", "700"], display: "swap" });
+const gflex = Google_Sans_Flex({ variable: "--font-gflex", subsets: ["latin"], weight: "variable", axes: ["wdth", "opsz", "ROND"], display: "swap" });
+const gcode = Google_Sans_Code({ variable: "--font-gcode", subsets: ["latin"], weight: ["400", "600"], display: "swap" });
 import { Providers } from "@/components/providers";
 
-const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-const tamil = Noto_Sans_Tamil({ variable: "--font-tamil", subsets: ["tamil"], weight: ["400", "600", "700"] });
 
 export const metadata: Metadata = {
   title: "MITRA for Paytm merchants · Missed-demand Intelligence",
@@ -19,7 +21,7 @@ export const viewport: Viewport = { themeColor: "#002e6e", width: "device-width"
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${inter.variable} ${geistMono.variable} ${tamil.variable} h-full antialiased`}>
+    <html lang="en" className={`${gsans.variable} ${gflex.variable} ${gcode.variable} h-full antialiased`}>
       <body className="min-h-full">
         <Providers>{children}</Providers>
       </body>

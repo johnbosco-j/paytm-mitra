@@ -369,6 +369,8 @@ class StorePatch(BaseModel):
         None
     )
     ai_mode: Literal["auto", "offline"] | None = None
+    cash_on_hand: Decimal | None = Field(default=None, ge=0, max_digits=12, decimal_places=2)
+    avg_margin_pct: Decimal | None = Field(default=None, ge=0, le=100, max_digits=5, decimal_places=2)
 
 
 def s_store(s: Store, role: str) -> dict:
@@ -383,6 +385,8 @@ def s_store(s: Store, role: str) -> dict:
         "trial_budget": s_money(s.trial_budget),
         "upi_vpa": s.upi_vpa,
         "ai_mode": s.ai_mode or "auto",
+        "cash_on_hand": s_money(s.cash_on_hand),
+        "avg_margin_pct": str(s.avg_margin_pct) if s.avg_margin_pct is not None else None,
         "role": role,
     }
 
@@ -1244,3 +1248,7 @@ def activity(ctx: StoreContext = Depends(store_context), db: Session = Depends(g
 from .preorders import router as preorder_router  # noqa: E402
 
 app.include_router(preorder_router)
+
+from .growth import router as growth_router  # noqa: E402
+
+app.include_router(growth_router)

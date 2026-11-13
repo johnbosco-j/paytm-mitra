@@ -46,6 +46,8 @@ class Store(Base):
     trial_budget: Mapped[Decimal | None] = mapped_column(Money, nullable=True)
     upi_vpa: Mapped[str | None] = mapped_column(String(80), nullable=True)  # for UPI QR pre-order fallback
     ai_mode: Mapped[str] = mapped_column(String(12), default="auto")  # auto | offline (MITRA-Lite only)
+    cash_on_hand: Mapped[Decimal | None] = mapped_column(Money, nullable=True)  # owner-entered, for the cash runway
+    avg_margin_pct: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)  # blended gross margin %
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
@@ -188,3 +190,33 @@ class PreOrder(Base):
     created_by: Mapped[str] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class Sale(Base):
+    """A completed sale (manual entry, Paytm statement CSV import or sample). Payers are pseudonymous (salted hash)."""
+
+    __tablename__ = "sales"
+    __table_args__ = (UniqueConstraint("store_id", "external_ref"), Index("ix_sales_store_time", "store_id", "occurred_at"))
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    store_id: Mapped[str] = mapped_column(ForeignKey("stores.id", ondelete="CASCADE"), index=True)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    amount: Mapped[Decimal] = mapped_column(Money)
+    method: Mapped[str] = mapped_column(String(12), default="upi")  # upi | cash | card | other
+    payer_hash: Mapped[str | None] = mapped_column(String(24), nullable=True)
+    external_ref: Mapped[str] = mapped_column(String(80))
+    source_type: Mapped[str] = mapped_column(String(24))  # merchant_manual | paytm_csv | sample_seed
+    created_by: Mapped[str | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class Expense(Base):
+    """Known recurring or one-off outflows for the cash runway (rent, power, supplier dues, salaries)."""
+
+    __tablename__ = "expenses"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    store_id: Mapped[str] = mapped_column(ForeignKey("stores.id", ondelete="CASCADE"), index=True)
+    name: Mapped[str] = mapped_column(String(80))
+    amount: Mapped[Decimal] = mapped_column(Money)
+    cadence: Mapped[str] = mapped_column(String(10))  # once | weekly | monthly
+    next_due: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

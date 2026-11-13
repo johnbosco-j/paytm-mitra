@@ -1,6 +1,6 @@
 "use client";
 
-import { Html } from "@react-three/drei";
+import { Html, useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -12,63 +12,6 @@ const useStep = (id: StepId) => {
   const s = useStory((x) => x.step);
   return s === stepIndex(id);
 };
-
-/** A grounded, adult human figure built from lathe/capsule forms (no cartoon features). */
-function Person({ position, rotation = 0, shirt, lower, skin = "#7a4b32", scale = 1, sari = false }: {
-  position: [number, number, number]; rotation?: number; shirt: string; lower: string; skin?: string; scale?: number; sari?: boolean;
-}) {
-  const torso = useMemo(() => {
-    const pts = [[0.0, 0], [0.17, 0.02], [0.19, 0.25], [0.21, 0.5], [0.2, 0.58], [0.08, 0.66], [0, 0.66]].map(([x, y]) => new THREE.Vector2(x, y));
-    return new THREE.LatheGeometry(pts, 20);
-  }, []);
-  const skirt = useMemo(() => {
-    const pts = [[0.0, 0], [0.26, 0], [0.22, 0.4], [0.18, 0.86], [0, 0.86]].map(([x, y]) => new THREE.Vector2(x, y));
-    return new THREE.LatheGeometry(pts, 20);
-  }, []);
-  return (
-    <group position={position} rotation-y={rotation} scale={scale}>
-      {sari ? (
-        <mesh geometry={skirt} castShadow>
-          <meshStandardMaterial color={lower} roughness={0.85} />
-        </mesh>
-      ) : (
-        [-0.09, 0.09].map((x) => (
-          <mesh key={x} position={[x, 0.43, 0]} castShadow>
-            <capsuleGeometry args={[0.07, 0.72, 4, 10]} />
-            <meshStandardMaterial color={lower} roughness={0.85} />
-          </mesh>
-        ))
-      )}
-      <mesh geometry={torso} position={[0, 0.86, 0]} castShadow>
-        <meshStandardMaterial color={shirt} roughness={0.8} />
-      </mesh>
-      {sari && (
-        <mesh position={[0.05, 1.2, 0.02]} rotation-z={-0.6} castShadow>
-          <boxGeometry args={[0.1, 0.62, 0.3]} />
-          <meshStandardMaterial color={lower} roughness={0.8} />
-        </mesh>
-      )}
-      {[-1, 1].map((s) => (
-        <mesh key={s} position={[s * 0.25, 1.17, 0]} rotation-z={s * 0.12} castShadow>
-          <capsuleGeometry args={[0.05, 0.5, 4, 8]} />
-          <meshStandardMaterial color={s > 0 ? skin : shirt} roughness={0.8} />
-        </mesh>
-      ))}
-      <mesh position={[0, 1.58, 0]} castShadow>
-        <cylinderGeometry args={[0.05, 0.06, 0.1, 10]} />
-        <meshStandardMaterial color={skin} roughness={0.7} />
-      </mesh>
-      <mesh position={[0, 1.72, 0]} scale={[0.92, 1.12, 0.98]} castShadow>
-        <sphereGeometry args={[0.105, 20, 16]} />
-        <meshStandardMaterial color={skin} roughness={0.6} />
-      </mesh>
-      <mesh position={[0, 1.79, -0.015]} scale={[1, 0.72, 1.05]}>
-        <sphereGeometry args={[0.11, 20, 12, 0, Math.PI * 2, 0, Math.PI / 1.9]} />
-        <meshStandardMaterial color="#120c0a" roughness={0.9} />
-      </mesh>
-    </group>
-  );
-}
 
 function Bubble({ children, tone = "light", visible }: { children: React.ReactNode; tone?: "light" | "red" | "blue" | "green"; visible: boolean }) {
   const cls = {
@@ -87,17 +30,46 @@ function Bubble({ children, tone = "light", visible }: { children: React.ReactNo
   );
 }
 
+/** Realistic people: Blender Studio CC0 human base meshes, dressed + posed in assets/blender/build_people.py. */
+function Human({ src, position, rotation = 0, scale = 1, breathe = 0 }: { src: string; position: [number, number, number]; rotation?: number; scale?: number; breathe?: number }) {
+  const { scene } = useGLTF(src, "/draco/");
+  const model = useMemo(() => {
+    const c = scene.clone(true);
+    c.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (m.isMesh) {
+        m.castShadow = true;
+        m.receiveShadow = true;
+      }
+    });
+    return c;
+  }, [scene]);
+  const g = useRef<THREE.Group>(null);
+  useFrame((state) => {
+    // subtle idle breathing / sway so nobody looks frozen
+    if (g.current && breathe) g.current.scale.y = scale * (1 + Math.sin(state.clock.elapsedTime * 1.6 + breathe) * 0.004);
+  });
+  return (
+    <group ref={g} position={position} rotation-y={rotation} scale={scale}>
+      <primitive object={model} />
+    </group>
+  );
+}
+useGLTF.preload("/models/customer.glb", "/draco/");
+useGLTF.preload("/models/murugan.glb", "/draco/");
+useGLTF.preload("/models/passerby.glb", "/draco/");
+
 export function People() {
   const step = useStory((s) => s.step);
   return (
     <group>
-      {/* customer on the footpath */}
-      <Person position={[ANCHOR.customer.x, ANCHOR.customer.y, ANCHOR.customer.z]} rotation={Math.PI + 0.5} shirt="#2f6f73" lower="#7b2d43" skin="#8a5a3c" sari />
+      {/* customer on the footpath, turned toward the counter */}
+      <Human src="/models/customer.glb" position={[ANCHOR.customer.x, ANCHOR.customer.y, ANCHOR.customer.z]} rotation={Math.PI + 0.6} breathe={1} />
       {/* Murugan behind the counter */}
-      <Person position={[-0.2, 0, -1.25]} shirt="#f4f1ea" lower="#f4f1ea" skin="#6e432c" />
+      <Human src="/models/murugan.glb" position={[-0.2, 0, -1.05]} rotation={0.25} breathe={2} />
       {/* passers-by */}
-      <Person position={[-6.5, 0.16, 1.1]} rotation={1.4} shirt="#3a3a6a" lower="#2b2b2b" />
-      <Person position={[8.2, 0.16, 12.2]} rotation={-1.2} shirt="#a23b2a" lower="#30343f" scale={0.98} />
+      <Human src="/models/passerby.glb" position={[-6.5, 0.16, 1.1]} rotation={1.4} breathe={3} />
+      <Human src="/models/passerby.glb" position={[8.2, 0.16, 12.2]} rotation={-1.2} scale={0.97} breathe={4} />
       <Html position={[ANCHOR.customer.x, 2.2, ANCHOR.customer.z]} center zIndexRange={[20, 0]}>
         <Bubble visible={step === stepIndex("ask")}>“Anna, mango lassi irukka?”</Bubble>
       </Html>

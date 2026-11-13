@@ -13,7 +13,20 @@ from decimal import Decimal
 from sqlalchemy import delete, select
 
 from app.db import SessionLocal
-from app.models import AuditEvent, DemandRequest, IdempotencyRecord, Membership, Product, StockMovement, Store, Trial, User
+from app.models import (
+    AuditEvent,
+    DemandRequest,
+    Expense,
+    IdempotencyRecord,
+    Membership,
+    PreOrder,
+    Product,
+    Sale,
+    StockMovement,
+    Store,
+    Trial,
+    User,
+)
 from app.security import hash_password
 
 OWNER = ("demo.owner@mitra.test", "Murugan K")
@@ -56,7 +69,7 @@ def run() -> None:
         # remove previous demo store(s) owned by the demo owner
         for m in db.scalars(select(Membership).where(Membership.user_id == owner.id, Membership.role == "owner")).all():
             sid = m.store_id
-            for model in (AuditEvent, StockMovement, DemandRequest, Trial, IdempotencyRecord):
+            for model in (AuditEvent, StockMovement, DemandRequest, Trial, IdempotencyRecord, Sale, Expense, PreOrder):
                 db.execute(delete(model).where(model.store_id == sid))
             db.execute(delete(Product).where(Product.store_id == sid))
             db.execute(delete(Membership).where(Membership.store_id == sid))
@@ -128,6 +141,47 @@ def run() -> None:
                             created_by=staff.id if i % 2 else owner.id,
                         )
                     )
+        # 60 days of SAMPLE sales: weekday rhythm, mild growth, ~70 repeat payers (some drifting away), UPI + cash
+        import hashlib
+        import random
+
+        rng = random.Random(15)
+        payers = [f"sample{i}@upi" for i in range(70)]
+        drifting = set(payers[:9])  # regulars who stopped coming about 3 weeks ago
+        weekday_mult = [0.9, 0.85, 0.9, 0.95, 1.1, 1.35, 1.3]
+        for day in range(60, 0, -1):
+            d = today - timedelta(days=day)
+            n = int(rng.gauss(46, 6) * weekday_mult[d.weekday()] * (1 + (60 - day) * 0.003))
+            for k in range(max(n, 10)):
+                when = d + timedelta(hours=rng.choice([7, 8, 9, 10, 11, 12, 13, 17, 18, 19, 20, 21]), minutes=rng.randint(0, 59))
+                payer = rng.choice(payers) if rng.random() < 0.72 else None
+                if payer in drifting and day < 22:
+                    payer = rng.choice(payers[9:])
+                method = "upi" if payer else ("cash" if rng.random() < 0.8 else "card")
+                amt = Decimal(str(round(max(10, rng.lognormvariate(4.1, 0.6)), 0)))
+                db.add(
+                    Sale(
+                        store_id=store.id,
+                        occurred_at=when.astimezone(UTC),
+                        amount=amt,
+                        method=method,
+                        payer_hash=hashlib.sha256(f"{store.id}:{payer}".encode()).hexdigest()[:16] if payer else None,
+                        external_ref=f"sample-{day}-{k}",
+                        source_type="sample_seed",
+                        created_by=owner.id,
+                    )
+                )
+        first = (today.replace(day=1) + timedelta(days=32)).replace(day=1)
+        # stock purchases are already netted by the margin, so only overheads go here
+        for name, amt, cad, due in (
+            ("Shop rent", "8500", "monthly", first),
+            ("Electricity", "1600", "monthly", today + timedelta(days=9)),
+            ("Helper salary", "7000", "monthly", first + timedelta(days=4)),
+            ("Phone + internet", "450", "monthly", today + timedelta(days=12)),
+        ):
+            db.add(Expense(store_id=store.id, name=name, amount=Decimal(amt), cadence=cad, next_due=due.astimezone(UTC)))
+        store.cash_on_hand = Decimal("2600")
+        store.avg_margin_pct = Decimal("18")
         db.add(
             AuditEvent(
                 store_id=store.id,
