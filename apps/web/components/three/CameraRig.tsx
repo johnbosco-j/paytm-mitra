@@ -11,14 +11,14 @@ const SHOTS: Record<StepId, { pos: [number, number, number]; look: [number, numb
   intro: { pos: [7.2, 4.3, 14.8], look: [-0.6, 3.0, 0], fov: 40 },
   arrive: { pos: [5.8, 1.7, 7.8], look: [0.8, 1.5, 0.2], fov: 40 },
   ask: { pos: [3.4, 1.8, 4.3], look: [0.8, 1.5, 0.3], fov: 38 },
-  illa: { pos: [0.7, 1.7, 2.1], look: [-1.55, 1.35, -2.3], fov: 36 },
+  illa: { pos: [0.4, 1.8, 2.2], look: [-2.5, 1.45, -1.9], fov: 36 },
   blind: { pos: [1.35, 1.45, 1.05], look: [0.72, 1.2, -0.5], fov: 32 },
   pile: { pos: [8.5, 4.2, 10.5], look: [-5.5, 2.3, 0], fov: 48 }, // shop on the right, the café where the sales went on the left
   listen: { pos: [0.95, 1.55, 0.95], look: [0.1, 1.25, -0.5], fov: 34 },
   evaluate: { pos: [0.35, 2.05, 2.9], look: [-0.15, 1.45, -0.3], fov: 40 },
   approve: { pos: [2.6, 2.4, 4.6], look: [0.6, 1.8, 0] },
   deliver: { pos: [11, 2.8, 10], look: [0.5, 0.9, 4.2] },
-  prove: { pos: [-0.2, 1.6, 0.7], look: [-1.5, 1.35, -2.3], fov: 40 },
+  prove: { pos: [-0.6, 1.75, 0.9], look: [-2.6, 1.45, -1.9], fov: 40 },
   cta: { pos: [-9, 5.5, 15], look: [0, 2.6, 0], fov: 44 },
 };
 

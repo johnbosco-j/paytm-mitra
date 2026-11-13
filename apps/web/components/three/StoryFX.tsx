@@ -123,7 +123,7 @@ export function People() {
     <group>
       <Walker src="/models/customer.glb" where={customerPath} breathe={1} />
       {/* Murugan behind the counter, hands resting on it */}
-      <Human src="/models/murugan.glb" position={[-0.2, 0.02, -1.0]} rotation={0.2} breathe={2} />
+      <Human src="/models/murugan.glb" position={[-0.2, 0.16, -1.85]} rotation={0.1} breathe={2} />
       <Walker src="/models/passerby.glb" where={passerA} breathe={3} />
       <Walker src="/models/passerby.glb" where={passerB} breathe={4} />
       <Html position={[ANCHOR.customer.x, 2.2, ANCHOR.customer.z]} center zIndexRange={[20, 0]}>

@@ -1,0 +1,28 @@
+{
+  "model": "models/qwen2.5-1.5b-instruct",
+  "adapter": "adapters/mitra-lite-v2",
+  "results": {
+    "handwritten": {
+      "n": 40,
+      "json_valid": 1.0,
+      "item_precision": 0.6,
+      "item_recall": 0.525,
+      "item_f1": 0.56,
+      "count_exact": 1.0,
+      "reason_acc": 0.905,
+      "negatives_correct": "4/4",
+      "latency_p50_s": 3.73
+    },
+    "test_unseen": {
+      "n": 100,
+      "json_valid": 1.0,
+      "item_precision": 0.576,
+      "item_recall": 0.576,
+      "item_f1": 0.576,
+      "count_exact": 1.0,
+      "reason_acc": 0.976,
+      "negatives_correct": "5/5",
+      "latency_p50_s": 4.54
+    }
+  }
+}

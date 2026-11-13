@@ -1,23 +1,27 @@
 "use client";
 
 import { useFrame } from "@react-three/fiber";
+import { useGLTF } from "@react-three/drei";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { reached, stepIndex, useStory } from "@/lib/story";
 import { lassiLabel, plaster, productAtlas, qrStandee, shutter, signboard, wood } from "./textures";
 
-// Shop frame (metres): facade on z = 0 facing +z; interior x ∈ [-2.5, 2.5], z ∈ [-4.5, 0], ceiling 3.2.
-export const SHOP = { w: 5, d: 4.5, h: 3.2 };
+// Store frame (metres): Murugan Stores is the team's downloaded café model, cut in front of its counter
+// (assets/blender/build_store.py). Street-facing opening at z = 0, floor at y = 0.16, counter x ∈ [-3.03, 3.03],
+// z ∈ [-1.38, -0.35], top at y = 1.08; back wall at z = -2.47; building x ∈ [-5, 5], walls 6.55 m, gable apex 9.25 m.
+export const SHOP = { w: 10, d: 5, h: 6.55, floor: 0.16, counterTop: 1.08 };
 // Anchors used by the camera rig and FX layer.
 export const ANCHOR = {
-  fridgeSlot: new THREE.Vector3(-1.55, 1.38, -2.35),
-  counterTop: new THREE.Vector3(0, 1.05, -0.55),
-  qr: new THREE.Vector3(0.75, 1.25, -0.5),
-  soundbox: new THREE.Vector3(0.18, 1.12, -0.5),
+  fridgeSlot: new THREE.Vector3(-2.7, 1.54, -1.8),
+  counterTop: new THREE.Vector3(0, 1.08, -0.6),
+  qr: new THREE.Vector3(0.75, 1.28, -0.5),
+  soundbox: new THREE.Vector3(0.18, 1.15, -0.5),
   customer: new THREE.Vector3(1.6, 0.16, 1.4),
 };
 
-function Shelves() {
+/** A shelving unit stocked with packets (instanced, 12 product looks from a procedural atlas). */
+function Shelves({ x, w, z = -2.22, seed = 0, sacks = false }: { x: number; w: number; z?: number; seed?: number; sacks?: boolean }) {
   const atlas = useMemo(() => productAtlas(), []);
   const mats = useMemo(
     () =>
@@ -32,17 +36,19 @@ function Shelves() {
   );
   const boxGeo = useMemo(() => new THREE.BoxGeometry(0.16, 0.22, 0.12), []);
   const groups = useRef<(THREE.InstancedMesh | null)[]>([]);
+  const levels = [0.5, 1.0, 1.5, 2.0, 2.5];
   const slots = useMemo(() => {
     const out: { p: [number, number, number]; s: number }[][] = Array.from({ length: 12 }, () => []);
-    let k = 0;
-    for (const y of [0.52, 1.02, 1.52, 2.02, 2.52])
-      for (let x = -1.05; x <= 2.25; x += 0.18) {
+    let k = seed;
+    for (const y of levels)
+      for (let px = -w / 2 + 0.12; px <= w / 2 - 0.12; px += 0.18) {
         const m = (k * 7 + Math.floor(y * 10)) % 12;
-        out[m].push({ p: [x, y + 0.11, -4.25 + (k % 2) * 0.02], s: 0.85 + ((k * 13) % 5) * 0.06 });
+        out[m].push({ p: [px, y + 0.11, (k % 2) * 0.02], s: 0.85 + ((k * 13) % 5) * 0.06 });
         k++;
       }
     return out;
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [w, seed]);
   useLayoutEffect(() => {
     const o = new THREE.Object3D();
     slots.forEach((list, m) => {
@@ -58,32 +64,31 @@ function Shelves() {
       im.instanceMatrix.needsUpdate = true;
     });
   }, [slots]);
-  const w = useMemo(() => wood([2, 1]), []);
+  const wd = useMemo(() => wood([2, 1]), []);
   return (
-    <group>
-      {/* back shelving unit */}
-      {[0.5, 1.0, 1.5, 2.0, 2.5].map((y) => (
-        <mesh key={y} position={[0.6, y, -4.22]} castShadow receiveShadow>
-          <boxGeometry args={[3.6, 0.04, 0.42]} />
-          <meshStandardMaterial map={w} roughness={0.7} />
+    <group position={[x, SHOP.floor, z]}>
+      {levels.map((y) => (
+        <mesh key={y} position={[0, y, 0]} castShadow receiveShadow>
+          <boxGeometry args={[w, 0.04, 0.42]} />
+          <meshStandardMaterial map={wd} roughness={0.7} />
         </mesh>
       ))}
-      {[-1.2, 2.4].map((x) => (
-        <mesh key={x} position={[x, 1.4, -4.22]} castShadow>
+      {[-w / 2, w / 2].map((px) => (
+        <mesh key={px} position={[px, 1.4, 0]} castShadow>
           <boxGeometry args={[0.05, 2.8, 0.42]} />
-          <meshStandardMaterial map={w} roughness={0.7} />
+          <meshStandardMaterial map={wd} roughness={0.7} />
         </mesh>
       ))}
       {slots.map((list, m) => (
         <instancedMesh key={m} ref={(r) => { groups.current[m] = r; }} args={[boxGeo, mats[m], list.length]} castShadow />
       ))}
-      {/* rice / grain sacks on the floor */}
-      {[[-0.6, -3.5], [-0.05, -3.6], [0.5, -3.45]].map(([x, z], i) => (
-        <mesh key={i} position={[x, 0.32, z]} castShadow>
-          <cylinderGeometry args={[0.24, 0.28, 0.62, 12]} />
-          <meshStandardMaterial color={["#d8c9a3", "#cdbb8f", "#e0d3b0"][i]} roughness={1} />
-        </mesh>
-      ))}
+      {sacks &&
+        [[-0.45, 0.62], [0.05, 0.7], [0.5, 0.6]].map(([sx, sz], i) => (
+          <mesh key={i} position={[sx, 0.31, sz]} castShadow>
+            <cylinderGeometry args={[0.22, 0.26, 0.6, 12]} />
+            <meshStandardMaterial color={["#d8c9a3", "#cdbb8f", "#e0d3b0"][i]} roughness={1} />
+          </mesh>
+        ))}
     </group>
   );
 }
@@ -117,7 +122,7 @@ function Fridge() {
     if (interior.current) interior.current.intensity = 2.2 + st.tod * 2;
   });
   return (
-    <group position={[-1.55, 0, -2.35]}>
+    <group position={[ANCHOR.fridgeSlot.x, SHOP.floor, ANCHOR.fridgeSlot.z - 0.2]}>
       <mesh castShadow receiveShadow position={[0, 1.05, -0.05]}>
         <boxGeometry args={[0.85, 2.1, 0.75]} />
         <meshStandardMaterial color="#c8102e" roughness={0.4} metalness={0.2} />
@@ -171,7 +176,6 @@ function Fridge() {
 }
 
 function Counter() {
-  const w = useMemo(() => wood([3, 1]), []);
   const qr = useMemo(() => qrStandee(), []);
   const ring = useRef<THREE.MeshStandardMaterial>(null);
   useFrame((state) => {
@@ -182,19 +186,10 @@ function Counter() {
     }
   });
   return (
-    <group>
-      {/* counter body + top */}
-      <mesh position={[0, 0.5, -0.55]} castShadow receiveShadow>
-        <boxGeometry args={[3.4, 1.0, 0.6]} />
-        <meshStandardMaterial map={w} roughness={0.6} />
-      </mesh>
-      <mesh position={[0, 1.02, -0.55]} castShadow receiveShadow>
-        <boxGeometry args={[3.5, 0.05, 0.7]} />
-        <meshStandardMaterial color="#3b2a20" roughness={0.35} />
-      </mesh>
-      {/* glass candy jars */}
-      {[-1.4, -1.1, -0.8].map((x, i) => (
-        <group key={x} position={[x, 1.2, -0.6]}>
+    <group position={[0, SHOP.counterTop - 1.05, 0]}>
+      {/* glass candy jars (right end of the counter, clear of the coffee machines and billing PC on the left) */}
+      {[2.5, 2.78, -2.88].map((x, i) => (
+        <group key={x} position={[x, 1.2, x < 0 ? -0.45 : -0.6]}>
           <mesh castShadow>
             <cylinderGeometry args={[0.11, 0.11, 0.3, 18]} />
             <meshPhysicalMaterial color="#ffffff" transmission={0.95} roughness={0.03} thickness={0.05} transparent opacity={0.4} />
@@ -253,7 +248,7 @@ function Sachets() {
   const geo = useMemo(() => new THREE.PlaneGeometry(0.09, 0.12), []);
   const strips = useMemo(
     () =>
-      [-2.1, -1.75, 1.75, 2.1].map((x, k) => ({
+      [-3.1, -2.75, 2.75, 3.1].map((x, k) => ({
         x,
         colors: Array.from({ length: 9 }, (_, i) => ["#e63946", "#457b9d", "#ffb703", "#2a9d8f", "#9b5de5", "#f15bb5"][(i + k) % 6]),
       })),
@@ -267,7 +262,7 @@ function Sachets() {
   return (
     <group ref={g}>
       {strips.map((s) => (
-        <group key={s.x} position={[s.x, 2.95, 0.12]}>
+        <group key={s.x} position={[s.x, 3.12, 0.42]}>
           {s.colors.map((c, i) => (
             <mesh key={i} geometry={geo} position={[0, -i * 0.13, 0]}>
               <meshStandardMaterial color={c} roughness={0.35} metalness={0.3} side={THREE.DoubleSide} />
@@ -285,96 +280,149 @@ function Awning() {
     c.width = 512;
     c.height = 64;
     const g = c.getContext("2d")!;
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 22; i++) {
       g.fillStyle = i % 2 ? "#f7f7f2" : "#1f4e8c";
-      g.fillRect(i * 32, 0, 32, 64);
+      g.fillRect(i * 24, 0, 24, 64);
     }
     const t = new THREE.CanvasTexture(c);
     t.colorSpace = THREE.SRGBColorSpace;
     return t;
   }, []);
   return (
-    <mesh position={[0, 3.12, 0.55]} rotation-x={0.45} castShadow>
-      <planeGeometry args={[5.2, 1.2, 1, 1]} />
+    <mesh position={[0, 3.42, 0.82]} rotation-x={0.45} castShadow>
+      <planeGeometry args={[7.0, 1.2, 1, 1]} />
       <meshStandardMaterial map={tex} roughness={0.85} side={THREE.DoubleSide} />
     </mesh>
   );
 }
 
-export function Kirana() {
-  const wall = useMemo(() => plaster("#f1e3c6", [2, 1]), []);
-  const upper = useMemo(() => plaster("#9cc5a1", [2, 2]), []);
+/** Street facade that closes the cut café: plaster gable wall with the shop opening, upper-floor windows,
+ * signboard, awning and the rolled-up shutter. */
+function Facade() {
+  const wall = useMemo(() => {
+    const t = plaster("#efe0bf", [1, 1]);
+    t.repeat.set(0.3, 0.3);
+    return t;
+  }, []);
+  const geo = useMemo(() => {
+    const s = new THREE.Shape();
+    const W = 5.15, O = 3.35, T = 3.3;
+    s.moveTo(-W, 0);
+    s.lineTo(-O, 0);
+    s.lineTo(-O, T);
+    s.lineTo(O, T);
+    s.lineTo(O, 0);
+    s.lineTo(W, 0);
+    s.lineTo(W, 6.65);
+    s.lineTo(0, 9.5);
+    s.lineTo(-W, 6.65);
+    s.closePath();
+    for (const [x, y] of [[-2.6, 4.75], [2.6, 4.75], [0, 7.05]] as const) {
+      const h = new THREE.Path();
+      const hw = x === 0 ? 0.55 : 0.75, hh = x === 0 ? 0.55 : 0.65;
+      h.moveTo(x - hw, y - hh);
+      h.lineTo(x + hw, y - hh);
+      h.lineTo(x + hw, y + hh);
+      h.lineTo(x - hw, y + hh);
+      h.closePath();
+      s.holes.push(h);
+    }
+    return new THREE.ExtrudeGeometry(s, { depth: 0.3, bevelEnabled: false });
+  }, []);
   const sign = useMemo(() => signboard("முருகன் ஸ்டோர்ஸ்", "MURUGAN STORES"), []);
   const shut = useMemo(() => shutter(), []);
-  const tube = useRef<THREE.MeshStandardMaterial>(null);
+  return (
+    <group position={[0, SHOP.floor - 0.16, 0]}>
+      <mesh geometry={geo} castShadow receiveShadow>
+        <meshStandardMaterial map={wall} roughness={0.95} />
+      </mesh>
+      {/* upper-floor windows: warm lit rooms behind dark grilles, with concrete sunshades */}
+      {[[-2.6, 4.75, 1.5, 1.3], [2.6, 4.75, 1.5, 1.3], [0, 7.05, 1.1, 1.1]].map(([x, y, w, h], i) => (
+        <group key={i} position={[x, y, 0.06]}>
+          <mesh>
+            <planeGeometry args={[w, h]} />
+            <meshStandardMaterial color="#3a2f28" emissive="#ffb35c" emissiveIntensity={i === 1 ? 0.55 : 0.25} roughness={0.6} />
+          </mesh>
+          {Array.from({ length: 5 }, (_, k) => (
+            <mesh key={k} position={[-w / 2 + (w / 4) * k, 0, 0.03]}>
+              <boxGeometry args={[0.03, h, 0.03]} />
+              <meshStandardMaterial color="#1d1d1f" metalness={0.5} roughness={0.4} />
+            </mesh>
+          ))}
+          <mesh position={[0, h / 2 + 0.08, 0.3]} castShadow>
+            <boxGeometry args={[w + 0.3, 0.06, 0.55]} />
+            <meshStandardMaterial color="#cfc6b4" roughness={0.9} />
+          </mesh>
+        </group>
+      ))}
+      {/* cornice at the eaves */}
+      <mesh position={[0, 6.68, 0.32]} castShadow>
+        <boxGeometry args={[10.5, 0.16, 0.35]} />
+        <meshStandardMaterial color="#d9cba8" roughness={0.9} />
+      </mesh>
+      {/* signboard over the opening */}
+      <mesh position={[0, 3.95, 0.36]} castShadow>
+        <boxGeometry args={[6.2, 1.0, 0.08]} />
+        <meshStandardMaterial color="#c9a227" />
+      </mesh>
+      <mesh position={[0, 3.95, 0.405]}>
+        <planeGeometry args={[6.1, 0.93]} />
+        <meshStandardMaterial map={sign} roughness={0.6} emissive="#ffffff" emissiveMap={sign} emissiveIntensity={0.18} />
+      </mesh>
+      {/* rolled-up shutter at the top of the opening */}
+      <mesh position={[0, 3.12, 0.15]} rotation-z={Math.PI / 2}>
+        <cylinderGeometry args={[0.17, 0.17, 6.7, 16]} />
+        <meshStandardMaterial map={shut} metalness={0.6} roughness={0.5} />
+      </mesh>
+      {/* entrance step */}
+      <mesh position={[0, 0.08, 0.25]} receiveShadow>
+        <boxGeometry args={[6.9, 0.16, 0.5]} />
+        <meshStandardMaterial color="#6d6a64" roughness={0.9} />
+      </mesh>
+    </group>
+  );
+}
+
+/** The café model itself (walls, counter, coffee machines, billing PC, rebranded boards, ceiling). */
+function StoreShell() {
+  const { scene } = useGLTF("/models/store.glb", "/draco/");
+  const model = useMemo(() => {
+    const c = scene.clone(true);
+    c.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (m.isMesh) {
+        m.castShadow = true;
+        m.receiveShadow = true;
+      }
+    });
+    return c;
+  }, [scene]);
+  return <primitive object={model} />;
+}
+useGLTF.preload("/models/store.glb", "/draco/");
+
+export function Kirana() {
   const tubeLight = useRef<THREE.PointLight>(null);
+  const counterLight = useRef<THREE.PointLight>(null);
   useFrame(() => {
     const tod = useStory.getState().tod;
-    if (tube.current) tube.current.emissiveIntensity = 2 + tod * 4;
-    if (tubeLight.current) tubeLight.current.intensity = 6 + tod * 10;
+    if (tubeLight.current) tubeLight.current.intensity = 7 + tod * 10;
+    if (counterLight.current) counterLight.current.intensity = 3 + tod * 5;
   });
   return (
     <group>
-      {/* shell */}
-      <mesh position={[0, SHOP.h / 2, -SHOP.d]} receiveShadow>
-        <planeGeometry args={[SHOP.w, SHOP.h]} />
-        <meshStandardMaterial map={wall} roughness={0.95} />
-      </mesh>
-      {[-1, 1].map((s) => (
-        <mesh key={s} position={[(s * SHOP.w) / 2, SHOP.h / 2, -SHOP.d / 2]} rotation-y={-s * Math.PI / 2} receiveShadow>
-          <planeGeometry args={[SHOP.d, SHOP.h]} />
-          <meshStandardMaterial map={wall} roughness={0.95} />
-        </mesh>
-      ))}
-      <mesh position={[0, 0.005, -SHOP.d / 2]} rotation-x={-Math.PI / 2} receiveShadow>
-        <planeGeometry args={[SHOP.w, SHOP.d]} />
-        <meshStandardMaterial color="#8f8478" roughness={0.6} />
-      </mesh>
-      <mesh position={[0, SHOP.h, -SHOP.d / 2]} rotation-x={Math.PI / 2}>
-        <planeGeometry args={[SHOP.w, SHOP.d]} />
-        <meshStandardMaterial color="#d8d0c0" roughness={1} />
-      </mesh>
-      {/* building above the shop: two floors, pillars, sunshade, tank */}
-      <mesh position={[0, 3.2 + 3.4, -2.6]} castShadow receiveShadow>
-        <boxGeometry args={[5.4, 6.8, 5.6]} />
-        <meshStandardMaterial map={upper} roughness={0.95} />
-      </mesh>
-      {[-2.55, 2.55].map((x) => (
-        <mesh key={x} position={[x, 1.6, 0]} castShadow>
-          <boxGeometry args={[0.3, 3.2, 0.3]} />
-          <meshStandardMaterial map={wall} roughness={0.9} />
-        </mesh>
-      ))}
-      {/* signboard + lights */}
-      <mesh position={[0, 3.62, 0.18]} castShadow>
-        <boxGeometry args={[4.8, 0.95, 0.08]} />
-        <meshStandardMaterial color="#c9a227" />
-      </mesh>
-      <mesh position={[0, 3.62, 0.225]}>
-        <planeGeometry args={[4.7, 0.88]} />
-        <meshStandardMaterial map={sign} roughness={0.6} emissive="#ffffff" emissiveMap={sign} emissiveIntensity={0.18} />
-      </mesh>
-      {/* rolled-up shutter box and the bottom edge of the shutter */}
-      <mesh position={[0, 3.08, 0.05]} rotation-z={Math.PI / 2}>
-        <cylinderGeometry args={[0.18, 0.18, 5, 16]} />
-        <meshStandardMaterial map={shut} metalness={0.6} roughness={0.5} />
-      </mesh>
+      <StoreShell />
+      <Facade />
       <Awning />
       <Sachets />
-      {/* tube light */}
-      <mesh position={[0, 3.05, -2.2]} rotation-z={Math.PI / 2}>
-        <cylinderGeometry args={[0.02, 0.02, 1.2, 8]} />
-        <meshStandardMaterial ref={tube} color="#fff" emissive="#f4fbff" emissiveIntensity={3} />
-      </mesh>
-      <pointLight ref={tubeLight} position={[0, 2.8, -1.8]} color="#f2f7ff" intensity={8} distance={8} decay={1.4} castShadow shadow-mapSize={[512, 512]} />
-      <Shelves />
+      {/* ceiling light over the counter + a warm fill on the boards */}
+      <pointLight ref={tubeLight} position={[0, 3.3, -1.3]} color="#f2f7ff" intensity={8} distance={9} decay={1.4} castShadow shadow-mapSize={[512, 512]} />
+      <pointLight ref={counterLight} position={[0, 2.4, -0.2]} color="#ffe6c4" intensity={4} distance={5} decay={1.6} />
+      <Shelves x={3.5} w={2.2} seed={3} />
+      <Shelves x={-4.05} w={1.2} seed={7} />
+      <Shelves x={-3.95} w={0.01} z={-0.75} seed={1} sacks />
       <Fridge />
       <Counter />
-      {/* step at the entrance */}
-      <mesh position={[0, 0.08, 0.15]} receiveShadow>
-        <boxGeometry args={[5, 0.16, 0.3]} />
-        <meshStandardMaterial color="#6d6a64" roughness={0.9} />
-      </mesh>
     </group>
   );
 }

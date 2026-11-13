@@ -1,5 +1,5 @@
 {
-  "checkpoint": "step 500 of 2200 (paused)",
+  "checkpoint": "v2 (brand-rich data, +1500 steps)",
   "baseline": {
     "n": 40,
     "json_valid": 0.975,
@@ -14,24 +14,24 @@
   "tuned": {
     "n": 40,
     "json_valid": 1.0,
-    "item_precision": 0.486,
-    "item_recall": 0.425,
-    "item_f1": 0.453,
+    "item_precision": 0.6,
+    "item_recall": 0.525,
+    "item_f1": 0.56,
     "count_exact": 1.0,
-    "reason_acc": 0.941,
+    "reason_acc": 0.905,
     "negatives_correct": "4/4",
-    "latency_p50_s": 2.68
+    "latency_p50_s": 3.73
   },
   "tuned_unseen": {
     "n": 100,
     "json_valid": 1.0,
-    "item_precision": 0.493,
-    "item_recall": 0.486,
-    "item_f1": 0.49,
-    "count_exact": 0.986,
-    "reason_acc": 0.957,
+    "item_precision": 0.576,
+    "item_recall": 0.576,
+    "item_f1": 0.576,
+    "count_exact": 1.0,
+    "reason_acc": 0.976,
     "negatives_correct": "5/5",
-    "latency_p50_s": 3.3
+    "latency_p50_s": 4.54
   },
   "note": "40 hand-written notes: item F1 27%\u219245%, ask count exact 46%\u2192100%, reason 55%\u219294%, injections/negatives ignored 1/4\u21924/4. Strict exact-name match; synthetic training data."
 }
