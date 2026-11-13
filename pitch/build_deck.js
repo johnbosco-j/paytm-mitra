@@ -33,7 +33,7 @@ async function icon(name, color = C.blue, size = 256) {
   pres.defineSlideMaster({
     title: "DARK",
     background: { color: C.ink },
-    objects: [{ text: { text: "Paytm MITRA · Build for India AI · Chennai 2026 · Prototype, not an official Paytm product", options: { x: 0.5, y: 5.28, w: 8.3, h: 0.22, fontSize: 8, color: "6F86A8", margin: 0 } } }],
+    objects: [{ text: { text: "Paytm MITRA · Made by RivenDevs · Build for India AI · Chennai 2026 · Prototype, not an official Paytm product", options: { x: 0.5, y: 5.28, w: 8.3, h: 0.22, fontSize: 8, color: "6F86A8", margin: 0 } } }],
     slideNumber: { x: 9.1, y: 5.28, w: 0.4, h: 0.22, fontSize: 8, color: "6F86A8", align: "right" },
   });
   const N = { n: 0 };
@@ -335,7 +335,7 @@ async function icon(name, color = C.blue, size = 256) {
     txt(s, "NEXT: Soundbox voice skill · consented 30-shop Chennai pilot* · supplier quotes · expiry radar", 0, { x: 0.55, y: 2.72, w: 8.9, h: 0.3, fontSize: 11, bold: true, color: C.blue, charSpacing: 1 });
     txt(s, [{ text: "Every QR knows what sold. ", options: { color: C.white } }, { text: "MITRA hears what didn't.", options: { color: C.blue } }], 1,
       { x: 0.55, y: 3.05, w: 8.9, h: 1.2, fontSize: 32, bold: true, fontFace: "Arial", valign: "top", fx: "zoom" });
-    txt(s, "Johnbosco J  ·  Jeffrey Figo J  ·  Joe Naren A", 2, { x: 0.55, y: 4.4, w: 8, h: 0.35, fontSize: 14, bold: true, color: C.mist });
+    txt(s, "Johnbosco J  ·  Jeffrey Figo J  ·  Joe Naren A  ·  Made by RivenDevs", 2, { x: 0.55, y: 4.4, w: 8.6, h: 0.35, fontSize: 14, bold: true, color: C.mist });
     txt(s, "* Requires Paytm approval and partnership; the pilot is a proposal.", 3, { x: 0.55, y: 4.82, w: 8, h: 0.2, fontSize: 8, color: "7D93B5", fx: "fade" });
   }
 

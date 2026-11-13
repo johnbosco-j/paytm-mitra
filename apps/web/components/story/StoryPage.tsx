@@ -26,6 +26,20 @@ const CHAPTERS: Chapter[] = [
   { kicker: "MITRA proves it", title: "Priya comes back. 14 of 16 sold.", body: "+₹182 gross profit: revenue ₹490, cost of goods ₹308, 2 bottles left (₹44). Predicted vs actual, recorded, so the next decision is smarter, and the customer who heard “illa” now hears “ready”.", chips: ["Predicted vs actual", "Customer won back"] },
 ];
 
+/** Hero headline: word-by-word blur-in, second line in an animated cyan→teal gradient. */
+function HeroLine({ text, delay, accent = false }: { text: string; delay: number; accent?: boolean }) {
+  return (
+    <span className={accent ? "hero-gradient" : undefined}>
+      {text.split(" ").map((w, i) => (
+        <span key={i} className="hero-word" style={{ animationDelay: `${delay + i * 0.07}s` }}>
+          {w}
+          {i < text.split(" ").length - 1 ? "\u00a0" : ""}
+        </span>
+      ))}
+    </span>
+  );
+}
+
 function Header() {
   const { me } = useApp();
   return (
@@ -57,6 +71,7 @@ function Loader({ done }: { done: boolean }) {
       <div className="text-center text-white">
         <p className="text-4xl font-black tracking-tight">MITRA</p>
         <p className="mt-2 text-sm text-[#8fd8f5]">Building Murugan Stores…</p>
+        <p className="mt-6 text-[11px] font-semibold tracking-[0.2em] text-white/50 uppercase">Made by RivenDevs</p>
         <div className="mx-auto mt-5 h-1 w-48 overflow-hidden rounded-full bg-white/15">
           <div className="h-full w-1/2 animate-[loader_1.1s_ease-in-out_infinite] rounded-full bg-[#00baf2]" />
         </div>
@@ -116,10 +131,10 @@ export function StoryPage() {
             <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1 text-xs font-bold text-[#002e6e] shadow">
               <span className="size-1.5 rounded-full bg-[#00baf2]" /> Paytm Build for India AI · Track 1 · Merchant Growth AI
             </p>
-            <h1 className="max-w-3xl text-[44px] font-black leading-[1.02] tracking-tight text-white drop-shadow-[0_4px_30px_rgba(0,0,0,0.55)] md:text-[80px]">
-              Every QR knows what sold.
+            <h1 className="hero-display max-w-6xl text-[38px] leading-[1.02] text-white drop-shadow-[0_6px_40px_rgba(0,0,0,0.55)] md:text-[64px] xl:text-[72px]">
+              <HeroLine text="Every QR knows what sold." delay={0} />
               <br />
-              <span className="text-[#00baf2]">MITRA hears what didn&apos;t.</span>
+              <HeroLine text="MITRA hears what didn’t." delay={0.35} accent />
             </h1>
             <p className="mt-5 max-w-xl text-lg text-white/85 drop-shadow">
               The AI business partner that captures the sales India&apos;s kirana stores lose every day, and turns them into small, safe, profitable decisions.
@@ -263,6 +278,7 @@ export function StoryPage() {
         <footer className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-10 text-sm text-[#667085]">
           <p><b className="text-[#002e6e]">MITRA</b> · Missed-demand Intelligence for Trade, Restock &amp; Action</p>
           <p>Johnbosco J · Jeffrey Figo J · Joe Naren A · Chennai 2026</p>
+          <p className="w-full text-center text-xs font-semibold tracking-[0.18em] text-[#002e6e]/70 uppercase md:w-auto">Made by RivenDevs</p>
         </footer>
       </div>
     </SmoothScroll>

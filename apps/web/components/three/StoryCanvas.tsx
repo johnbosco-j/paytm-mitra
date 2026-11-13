@@ -31,6 +31,29 @@ function Effects({ tier }: { tier: number }) {
   );
 }
 
+/** Sharp textures at grazing angles (street, boards, signs): max anisotropic filtering on every map as models load. */
+function Anisotropy() {
+  const { gl, scene } = useThree();
+  const last = useRef(0);
+  useFrame((state) => {
+    const t = state.clock.elapsedTime;
+    if (t - last.current < 2 || t > 40) return;
+    last.current = t;
+    const max = gl.capabilities.getMaxAnisotropy();
+    scene.traverse((o) => {
+      const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
+      if (!m) return;
+      for (const tex of [m.map, m.normalMap, m.roughnessMap, m.emissiveMap]) {
+        if (tex && tex.anisotropy < max) {
+          tex.anisotropy = max;
+          tex.needsUpdate = true;
+        }
+      }
+    });
+  });
+  return null;
+}
+
 function Ready({ onReady }: { onReady?: () => void }) {
   const frames = useRef(0);
   const { gl } = useThree();
@@ -42,7 +65,7 @@ function Ready({ onReady }: { onReady?: () => void }) {
     }
   });
   useEffect(() => {
-    gl.shadowMap.type = THREE.PCFSoftShadowMap;
+    gl.shadowMap.type = THREE.PCFShadowMap; // PCFSoftShadowMap was removed in three r18x
   }, [gl]);
   return null;
 }
@@ -54,7 +77,7 @@ export default function StoryCanvas({ onReady }: { onReady?: () => void }) {
   return (
     <div aria-hidden className="fixed inset-0 z-0" ref={(el) => { if (el) overlayRoot.current = el; }}>
       <Canvas
-        dpr={q === 3 ? [1, 1.6] : q === 2 ? 1.25 : 1}
+        dpr={q === 3 ? [1, 2] : q === 2 ? 1.25 : 1}
         shadows={q > 0}
         gl={{ antialias: false, powerPreference: "high-performance", toneMapping: THREE.NoToneMapping }}
         camera={{ fov: 42, near: 0.05, far: 900, position: [11, 6, 17] }}
@@ -75,6 +98,7 @@ export default function StoryCanvas({ onReady }: { onReady?: () => void }) {
           <StoryFX />
           <CameraRig />
           <Effects tier={tier} />
+          <Anisotropy />
           <Ready onReady={onReady} />
         </Suspense>
       </Canvas>

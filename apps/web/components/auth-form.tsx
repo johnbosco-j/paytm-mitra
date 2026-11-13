@@ -62,6 +62,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
             <>Have an account? <Link className="text-signal" href="/login">Sign in</Link></>
           )}
         </p>
+        <p className="text-center text-[11px] font-semibold tracking-[0.18em] text-faint uppercase">Made by RivenDevs</p>
       </form>
     </div>
   );

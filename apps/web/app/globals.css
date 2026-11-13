@@ -112,3 +112,22 @@ body {
 .apple-type h1, .apple-type h2 { letter-spacing: -0.035em; }
 .apple-type .serif-quote { font-family: "New York", ui-serif, "Iowan Old Style", Georgia, serif !important; font-style: italic; }
 .apple-type .num, .apple-type code { font-family: "SF Mono", ui-monospace, Menlo, monospace !important; }
+
+/* Hero headline: Google Sans Flex at an expressive setting (wide, rounded, heavy) — overrides the story's Apple type. */
+.apple-type .hero-display, .apple-type .hero-display * {
+  font-family: var(--font-gflex), var(--font-gsans), -apple-system, system-ui, sans-serif !important;
+  font-variation-settings: "wdth" 118, "ROND" 100, "opsz" 72 !important;
+  font-weight: 860;
+  letter-spacing: -0.045em;
+}
+.hero-word { display: inline-block; animation: hero-in 0.9s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes hero-in { from { opacity: 0; transform: translateY(0.35em); filter: blur(12px); } to { opacity: 1; transform: none; filter: blur(0); } }
+.hero-gradient .hero-word {
+  background: linear-gradient(100deg, #00baf2 0%, #7fe8ff 35%, #2de1c2 60%, #00baf2 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: hero-in 0.9s cubic-bezier(.2,.8,.2,1) both, hero-sheen 6s ease-in-out 1.4s infinite;
+  filter: drop-shadow(0 4px 24px rgba(0, 186, 242, 0.35));
+}
+@keyframes hero-sheen { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+@media (prefers-reduced-motion: reduce) { .hero-word, .hero-gradient .hero-word { animation: none; } }

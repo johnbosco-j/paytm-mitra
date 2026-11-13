@@ -418,7 +418,7 @@ export function Kirana() {
       <Awning />
       <Sachets />
       {/* ceiling light over the counter + a warm fill on the boards */}
-      <pointLight ref={tubeLight} position={[0, 3.3, -1.3]} color="#f2f7ff" intensity={8} distance={9} decay={1.4} castShadow shadow-mapSize={[512, 512]} />
+      <pointLight ref={tubeLight} position={[0, 3.3, -1.3]} color="#f2f7ff" intensity={8} distance={9} decay={1.4} castShadow shadow-mapSize={[1024, 1024]} shadow-bias={-0.0006} />
       <pointLight ref={counterLight} position={[0, 2.4, -0.2]} color="#ffe6c4" intensity={4} distance={5} decay={1.6} />
       <Shelves x={3.5} w={2.2} seed={3} />
       <Shelves x={-4.05} w={1.2} seed={7} />

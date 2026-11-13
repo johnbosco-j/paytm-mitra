@@ -5,6 +5,7 @@ import { Overlay as Html } from "./Overlay";
 import { useFrame } from "@react-three/fiber";
 import { Suspense, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
+import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { reached, stepIndex, useStory, type StepId } from "@/lib/story";
 import { ANCHOR } from "./Kirana";
 
@@ -60,63 +61,117 @@ function Human({ src, position, rotation = 0, scale = 1, breathe = 0 }: { src: s
   );
 }
 
-type Waypoint = { at: THREE.Vector3; face: number };
+type Pose = "Idle" | "Ask";
+type Waypoint = { at: THREE.Vector3; face: number; pose?: Pose };
 const v3 = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
+const STRIDE_SPEED = 1.19; // m/s covered by one baked gait cycle (assets/blender/build_walkers.py: 32 frames @ 30 fps)
 
-/** A person who walks between story positions: eased glide, a small step bob and a turn toward where they're going. */
-function Walker({ src, where, breathe = 1 }: { src: string; where: (step: number) => Waypoint; breathe?: number }) {
-  const model = useHuman(src);
+/**
+ * A skinned person with baked clips (Walk, Idle, Ask) from build_walkers.py. Walks between story positions with
+ * the Walk clip at a playback rate matched to the ground speed (no foot skating), turns toward where they're
+ * heading, then cross-fades into the scene pose.
+ */
+function Person({ src, where, spawn, tint, speed = 1.15 }: { src: string; where: (step: number, t: number) => Waypoint; spawn?: THREE.Vector3; tint?: string; speed?: number }) {
+  const gltf = useGLTF(src, "/draco/");
+  const rig = useMemo(() => {
+    const model = cloneSkinned(gltf.scene);
+    model.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (!m.isMesh) return;
+      m.castShadow = true;
+      m.receiveShadow = true;
+      m.frustumCulled = false; // skinned bounds don't follow the animation
+      const mat = m.material as THREE.MeshStandardMaterial;
+      if (tint && /shirt/i.test(mat.name)) {
+        const c = mat.clone();
+        c.color.set(tint);
+        m.material = c;
+      }
+    });
+    const mixer = new THREE.AnimationMixer(model);
+    const actions = Object.fromEntries(gltf.animations.map((c) => [c.name, mixer.clipAction(c)]));
+    return { model, mixer, actions };
+  }, [gltf, tint]);
   const g = useRef<THREE.Group>(null);
-  const start = useRef<Waypoint | null>(null);
+  const placed = useRef(false);
+  const clip = useRef<string | null>(null);
+  const play = (name: string) => {
+    if (clip.current === name || !rig.actions[name]) return;
+    const next = rig.actions[name];
+    next.reset().setEffectiveWeight(1).fadeIn(clip.current ? 0.35 : 0).play();
+    if (clip.current) rig.actions[clip.current]?.fadeOut(0.35);
+    clip.current = name;
+  };
   useFrame((state, dt) => {
     const st = useStory.getState();
-    const target = where(st.step);
-    if (!g.current) return;
-    if (!start.current || st.reduced) {
-      start.current = target;
-      g.current.position.copy(target.at);
-      g.current.rotation.y = target.face;
-      return;
+    const target = where(st.step, state.clock.elapsedTime);
+    const grp = g.current;
+    if (!grp) return;
+    const snap = st.reduced || new URLSearchParams(window.location.search).has("shot");
+    if (!placed.current || snap) {
+      placed.current = true;
+      grp.position.copy(!snap && spawn ? spawn : target.at);
+      grp.rotation.y = target.face;
     }
-    const p = g.current.position;
+    const p = grp.position;
     const to = target.at;
     const dist = Math.hypot(to.x - p.x, to.z - p.z);
-    const moving = dist > 0.05;
-    // walk at ~1.3 m/s, turning to face the direction of travel, then settle into the scene pose
-    const k = Math.min(1, (1.3 * dt) / Math.max(dist, 1e-3));
-    p.x += (to.x - p.x) * k;
-    p.z += (to.z - p.z) * k;
-    const heading = moving ? Math.atan2(to.x - p.x, to.z - p.z) : target.face;
-    let d = heading - g.current.rotation.y;
-    d = Math.atan2(Math.sin(d), Math.cos(d));
-    g.current.rotation.y += d * Math.min(1, dt * 6);
-    const t = state.clock.elapsedTime;
-    p.y = to.y + (moving ? Math.abs(Math.sin(t * 7.5)) * 0.025 : 0);
-    g.current.rotation.z = moving ? Math.sin(t * 7.5) * 0.02 : 0;
-    g.current.scale.y = 1 + (moving ? 0 : Math.sin(t * 1.6 + breathe) * 0.004);
+    const moving = !snap && dist > 0.06;
+    if (moving) {
+      const step = Math.min(dist, speed * Math.min(dt, 0.05));
+      p.x += ((to.x - p.x) / dist) * step;
+      p.z += ((to.z - p.z) / dist) * step;
+      const heading = Math.atan2(to.x - p.x, to.z - p.z);
+      let d = heading - grp.rotation.y;
+      d = Math.atan2(Math.sin(d), Math.cos(d));
+      grp.rotation.y += d * Math.min(1, dt * 5);
+      play("Walk");
+      rig.actions.Walk?.setEffectiveTimeScale(speed / STRIDE_SPEED);
+    } else {
+      let d = target.face - grp.rotation.y;
+      d = Math.atan2(Math.sin(d), Math.cos(d));
+      grp.rotation.y += d * Math.min(1, dt * 3);
+      play(target.pose ?? "Idle");
+    }
+    p.y = to.y;
+    rig.mixer.update(Math.min(dt, 0.05));
   });
   return (
     <group ref={g}>
-      <primitive object={model} />
+      <primitive object={rig.model} />
     </group>
   );
 }
 
-const COUNTER: Waypoint = { at: v3(ANCHOR.customer.x, ANCHOR.customer.y, ANCHOR.customer.z), face: Math.PI + 0.6 };
-/** Priya's day: walks up, asks, hears "illa", walks away; next day comes back for the pre-order she paid for. */
-function customerPath(step: number): Waypoint {
-  if (step <= stepIndex("intro")) return { at: v3(9, 0.16, 1.7), face: -Math.PI / 2 };
-  if (step <= stepIndex("illa")) return COUNTER;
-  if (step < stepIndex("prove")) return { at: v3(-24.5, 0.16, 1.9), face: Math.PI }; // into City Café & Mart
-  return COUNTER;
+/**
+ * Priya and her husband, together all story: they stroll up, she asks, hears "illa", they walk on to City Café &
+ * Mart; the morning the stock arrives they come back for the pre-order she paid for.
+ */
+const AT_COUNTER = { her: v3(ANCHOR.customer.x, ANCHOR.customer.y, ANCHOR.customer.z), him: v3(2.4, 0.16, 1.85) };
+function couplePath(who: "her" | "him") {
+  const lane = who === "her" ? 1.7 : 2.35; // side by side on the footpath, he walks on the road side
+  return (step: number): Waypoint => {
+    if (step <= stepIndex("intro")) return { at: v3(4.6, 0.16, lane), face: -Math.PI / 2 };
+    if (step <= stepIndex("illa")) {
+      return who === "her"
+        ? { at: AT_COUNTER.her, face: Math.PI + 0.6, pose: step === stepIndex("ask") ? "Ask" : "Idle" }
+        : { at: AT_COUNTER.him, face: Math.PI + 0.25 };
+    }
+    if (step < stepIndex("deliver")) return { at: v3(-24.2, 0.16, lane), face: Math.PI }; // into City Café & Mart
+    return who === "her" ? { at: AT_COUNTER.her, face: Math.PI + 0.6 } : { at: AT_COUNTER.him, face: Math.PI + 0.25 };
+  };
 }
-/** Passers-by keep the street alive, crossing the frame as the story moves on. */
-const passerA = (step: number): Waypoint => ({ at: v3(step % 2 ? -7.5 : 7.5, 0.16, 1.15), face: step % 2 ? -Math.PI / 2 : Math.PI / 2 });
-const passerB = (step: number): Waypoint => ({ at: v3(step % 2 ? 9 : -9, 0.16, 12.2), face: step % 2 ? Math.PI / 2 : -Math.PI / 2 });
+const herPath = couplePath("her");
+const himPath = couplePath("him");
+/** A stranger strolling the far footpath, back and forth, independent of the chapters. */
+const strollerPath = (_: number, t: number): Waypoint => {
+  const leg = Math.floor(t / 38) % 2; // 38 s per crossing at ~1.1 m/s
+  return { at: v3(leg ? -21 : 21, 0.16, 12.4), face: leg ? -Math.PI / 2 : Math.PI / 2 };
+};
 
-useGLTF.preload("/models/customer.glb", "/draco/");
+useGLTF.preload("/models/customer_walk.glb", "/draco/");
+useGLTF.preload("/models/partner_walk.glb", "/draco/");
 useGLTF.preload("/models/murugan.glb", "/draco/");
-useGLTF.preload("/models/passerby.glb", "/draco/");
 
 export function People() {
   const step = useStory((s) => s.step);
@@ -124,15 +179,15 @@ export function People() {
     <group>
       {/* each model loads in its own Suspense so the speech bubbles (drei Html) never unmount mid-render */}
       <Suspense fallback={null}>
-        <Walker src="/models/customer.glb" where={customerPath} breathe={1} />
+        <Person src="/models/customer_walk.glb" where={herPath} spawn={v3(11, 0.16, 1.7)} />
+        <Person src="/models/partner_walk.glb" where={himPath} spawn={v3(11, 0.16, 2.35)} />
       </Suspense>
       {/* Murugan behind the counter, hands resting on it */}
       <Suspense fallback={null}>
         <Human src="/models/murugan.glb" position={[-0.2, 0.16, -1.85]} rotation={0.1} breathe={2} />
       </Suspense>
       <Suspense fallback={null}>
-        <Walker src="/models/passerby.glb" where={passerA} breathe={3} />
-        <Walker src="/models/passerby.glb" where={passerB} breathe={4} />
+        <Person src="/models/partner_walk.glb" where={strollerPath} spawn={v3(-21, 0.16, 12.4)} tint="#e0a15a" speed={1.1} />
       </Suspense>
       <Html position={[ANCHOR.customer.x, 2.2, ANCHOR.customer.z]} center zIndexRange={[20, 0]}>
         <Bubble visible={step === stepIndex("ask")}>“Anna, mango lassi irukka?”</Bubble>

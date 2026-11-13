@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   description:
     "MITRA hears the sales your QR never sees. Capture missed customer requests in any of India's 22 languages, see profit-aware stocking trials, approve and prove results.",
   appleWebApp: { capable: true, title: "MITRA", statusBarStyle: "default" },
+  authors: [{ name: "RivenDevs" }],
+  creator: "RivenDevs",
   icons: { icon: "/icon-192.png", apple: "/icon-192.png" },
 };
 

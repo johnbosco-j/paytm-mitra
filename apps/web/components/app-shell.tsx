@@ -156,7 +156,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
         <main className="mx-auto w-full max-w-6xl px-4 pt-5 pb-32 md:px-8 md:pb-12">{children}</main>
         <p className="px-4 pb-28 text-center text-[11px] text-faint md:pb-6">
-          MITRA is a hackathon prototype for the Paytm Build for India AI Hackathon. Not an official Paytm product or integration.
+          MITRA is a hackathon prototype for the Paytm Build for India AI Hackathon. Not an official Paytm product or integration. · <b className="font-semibold">Made by RivenDevs</b>
         </p>
       </div>
 

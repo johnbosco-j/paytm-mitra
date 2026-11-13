@@ -16,13 +16,13 @@ const hideDevBadge = (page) => page.addStyleTag({ content: "nextjs-portal{displa
 
 async function story(browser) {
   const page = await browser.newPage();
-  await page.setViewport({ width: 1600, height: 900, deviceScaleFactor: 1 });
+  await page.setViewport({ width: 1920, height: 1080, deviceScaleFactor: 2 }); // 3840×2160 (4K) frames
   for (let i = 0; i < STORY_STEPS; i++) {
     await page.goto(`${BASE}/?shot=${i}&clean=1`, { waitUntil: "load", timeout: 120000 });
     await hideDevBadge(page);
     await sleep(9000); // models load, the truck drives in, post-processing settles
     const f = path.join(OUT, `story_${String(i).padStart(2, "0")}.jpg`);
-    await page.screenshot({ path: f, type: "jpeg", quality: 88 });
+    await page.screenshot({ path: f, type: "jpeg", quality: 90 });
     console.log("story", i, "->", path.basename(f));
   }
   await page.close();
@@ -32,7 +32,7 @@ async function app(browser) {
   const email = process.env.DEMO_EMAIL, password = process.env.DEMO_PASSWORD;
   if (!email || !password) throw new Error("set DEMO_EMAIL and DEMO_PASSWORD (local seed account)");
   const page = await browser.newPage();
-  await page.setViewport({ width: 1440, height: 900, deviceScaleFactor: 1 });
+  await page.setViewport({ width: 1440, height: 900, deviceScaleFactor: 2 });
   await page.goto(`${BASE}/login`, { waitUntil: "load", timeout: 120000 });
   const status = await page.evaluate(async (e, p) => (await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: e, password: p }) })).status, email, password);
   if (status !== 200) throw new Error(`login failed: ${status}`);
