@@ -2,7 +2,7 @@
 
 import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { Suspense, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { reached, stepIndex, useStory } from "@/lib/story";
 import { lassiLabel, plaster, productAtlas, qrStandee, shutter, signboard, wood } from "./textures";
@@ -187,8 +187,8 @@ function Counter() {
   });
   return (
     <group position={[0, SHOP.counterTop - 1.05, 0]}>
-      {/* glass candy jars (right end of the counter, clear of the coffee machines and billing PC on the left) */}
-      {[2.5, 2.78, -2.88].map((x, i) => (
+      {/* glass candy jars at both ends of the counter */}
+      {[2.5, 2.78, -2.75].map((x, i) => (
         <group key={x} position={[x, 1.2, x < 0 ? -0.45 : -0.6]}>
           <mesh castShadow>
             <cylinderGeometry args={[0.11, 0.11, 0.3, 18]} />
@@ -411,7 +411,9 @@ export function Kirana() {
   });
   return (
     <group>
-      <StoreShell />
+      <Suspense fallback={null}>
+        <StoreShell />
+      </Suspense>
       <Facade />
       <Awning />
       <Sachets />

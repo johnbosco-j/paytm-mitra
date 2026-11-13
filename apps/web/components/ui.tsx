@@ -38,7 +38,8 @@ export function Button({ variant = "primary", size = "md", loading, className, c
 }
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
-  return <section className={cx("rounded-2xl border border-line bg-surface p-5 shadow-[0_2px_12px_rgba(16,40,80,0.05)]", className)}>{children}</section>;
+  // min-w-0: cards are often grid children; without it a wide table or chart inside stretches the grid past the phone width
+  return <section className={cx("min-w-0 rounded-2xl border border-line bg-surface p-5 shadow-[0_2px_12px_rgba(16,40,80,0.05)]", className)}>{children}</section>;
 }
 
 export function Badge({

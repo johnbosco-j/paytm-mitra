@@ -2,7 +2,7 @@
 
 import { useGLTF } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { Suspense, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useStory } from "@/lib/story";
 import { asphalt, concrete, leafCard, plaster, storeSign, wallAd } from "./textures";
@@ -363,9 +363,18 @@ function BigStore() {
     const c = scene.clone(true);
     c.traverse((o) => {
       const m = o as THREE.Mesh;
-      if (m.isMesh) {
-        m.castShadow = true;
-        m.receiveShadow = true;
+      if (!m.isMesh) return;
+      m.castShadow = true;
+      m.receiveShadow = true;
+      // same building as Murugan's store, so dress it as a dark, glossy chain store: charcoal walls, untouched glass
+      const mat = m.material as THREE.MeshStandardMaterial;
+      if (mat?.color && !mat.transparent && mat.color.getHSL({ h: 0, s: 0, l: 0 }).l > 0.55) {
+        const dark = mat.clone();
+        dark.color.set("#2b3038");
+        dark.map = null;
+        dark.roughness = 0.35;
+        dark.metalness = 0.2;
+        m.material = dark;
       }
     });
     return c;
@@ -421,7 +430,9 @@ export function Street() {
       {[-14, -2.8, 6, 20].map((x) => (
         <StreetLamp key={x} x={x} />
       ))}
-      <BigStore />
+      <Suspense fallback={null}>
+        <BigStore />
+      </Suspense>
       <PowerLines />
       <NeemTree position={[-5.2, 0.16, 1.4]} s={1.05} />
       <NeemTree position={[13.5, 0.16, 1.5]} s={0.9} />
@@ -429,7 +440,9 @@ export function Street() {
       <ParkedScooter position={[-3.6, 0.16, 1.6]} color="#c1121f" />
       <ParkedScooter position={[4.4, 0.16, 1.8]} color="#1d3557" />
       <group position={[-12, 0, 5.2]} rotation-y={0.08}>
-        <AutoRickshaw />
+        <Suspense fallback={null}>
+          <AutoRickshaw />
+        </Suspense>
       </group>
       <fog attach="fog" args={["#3a3550", 22, 90]} />
     </group>

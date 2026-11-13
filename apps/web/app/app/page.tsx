@@ -101,9 +101,9 @@ export default function Today() {
             ))}
           </div>
         </div>
-        <div className="relative mt-4 flex gap-2">
+        <div className="relative mt-4 flex flex-wrap gap-2">
           <Link href="/app/demand" className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-bold whitespace-nowrap text-navy shadow md:px-5"><Mic className="size-4" /> {t.log_missed}</Link>
-          <Link href="/app/opportunities" className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-4 py-2.5 text-sm font-bold whitespace-nowrap text-white hover:bg-white/25 md:px-5"><span className="hidden sm:inline">See</span> opportunities <ArrowRight className="size-4" /></Link>
+          <Link href="/app/opportunities" className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-4 py-2.5 text-sm font-bold whitespace-nowrap text-white hover:bg-white/25 md:px-5">See opportunities <ArrowRight className="size-4" /></Link>
         </div>
         <div className="relative mt-5 grid grid-cols-2 gap-3 border-t border-white/15 pt-4 md:grid-cols-4">
           <MiniStat label="Gross profit from trials" value={rupees(data.kpis.realized_gross_profit)} />

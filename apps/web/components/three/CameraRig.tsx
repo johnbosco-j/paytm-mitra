@@ -11,7 +11,7 @@ const SHOTS: Record<StepId, { pos: [number, number, number]; look: [number, numb
   intro: { pos: [7.2, 4.3, 14.8], look: [-0.6, 3.0, 0], fov: 40 },
   arrive: { pos: [5.8, 1.7, 7.8], look: [0.8, 1.5, 0.2], fov: 40 },
   ask: { pos: [3.4, 1.8, 4.3], look: [0.8, 1.5, 0.3], fov: 38 },
-  illa: { pos: [0.4, 1.8, 2.2], look: [-2.5, 1.45, -1.9], fov: 36 },
+  illa: { pos: [1.4, 1.85, 2.4], look: [-1.5, 1.5, -1.9], fov: 40 },
   blind: { pos: [1.35, 1.45, 1.05], look: [0.72, 1.2, -0.5], fov: 32 },
   pile: { pos: [8.5, 4.2, 10.5], look: [-5.5, 2.3, 0], fov: 48 }, // shop on the right, the café where the sales went on the left
   listen: { pos: [0.95, 1.55, 0.95], look: [0.1, 1.25, -0.5], fov: 34 },
@@ -31,8 +31,14 @@ export function CameraRig() {
     const cam = state.camera as THREE.PerspectiveCamera;
     const t = st.stepT + dt;
     const drift = st.reduced ? 0 : Math.sin(t * 0.25) * 0.035;
-    const [px, py, pz] = shot.pos;
-    const [lx, , lz] = shot.look;
+    // Portrait phones see a much narrower slice: pull back along the shot's line of sight (and a touch higher)
+    // so the subject stays in frame above the chapter card.
+    const portrait = cam.aspect < 0.9;
+    const pull = portrait ? (id === "intro" || id === "cta" || id === "pile" ? 1.25 : 1.75) : 1;
+    const [lx, ly, lz] = shot.look;
+    const px = lx + (shot.pos[0] - lx) * pull;
+    const py = ly + (shot.pos[1] - ly) * pull + (portrait ? 0.25 : 0);
+    const pz = lz + (shot.pos[2] - lz) * pull;
     const c = Math.cos(drift);
     const s = Math.sin(drift);
     tmp.p.set(lx + (px - lx) * c - (pz - lz) * s, py, lz + (px - lx) * s + (pz - lz) * c);
@@ -50,7 +56,7 @@ export function CameraRig() {
       easing.damp3(tmp.look, tmp.target, 0.7, dt);
     }
     cam.lookAt(tmp.look);
-    const fov = shot.fov ?? 42;
+    const fov = (shot.fov ?? 42) + (portrait ? 6 : 0);
     const wide = state.size.width >= 1024 && id !== "cta";
     const film = wide ? (id === "intro" ? -0.42 : -0.3) * Math.tan(THREE.MathUtils.degToRad(fov / 2)) * cam.aspect * cam.getFilmWidth() : 0;
     const nf = THREE.MathUtils.damp(cam.fov, fov, 2.5, dt);

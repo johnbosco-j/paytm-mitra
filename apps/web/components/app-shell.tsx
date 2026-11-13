@@ -165,10 +165,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="relative grid grid-cols-5 items-end pb-[max(env(safe-area-inset-bottom),6px)]">
           {[
             { href: "/app", label: t.nav_home, icon: Home },
-            { href: "/app/opportunities", label: t.nav_opps, icon: Sparkles },
+            { href: "/app/opportunities", label: t.tab_opps, icon: Sparkles },
             { href: "/app/demand", label: "Speak", icon: Mic, center: true },
             { href: "/app/trials", label: t.nav_trials, icon: FlaskConical },
-            { href: "/app/preorders", label: t.nav_preorders, icon: ScrollText },
+            { href: "/app/preorders", label: t.tab_preorders, icon: ScrollText },
           ].map(({ href, label, icon: Icon, center }) =>
             center ? (
               <Link key={href} href={href} className="flex flex-col items-center gap-1 pb-1.5">

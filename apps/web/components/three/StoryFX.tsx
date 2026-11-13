@@ -1,8 +1,9 @@
 "use client";
 
-import { Html, useGLTF } from "@react-three/drei";
+import { useGLTF } from "@react-three/drei";
+import { Overlay as Html } from "./Overlay";
 import { useFrame } from "@react-three/fiber";
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { Suspense, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { reached, stepIndex, useStory, type StepId } from "@/lib/story";
 import { ANCHOR } from "./Kirana";
@@ -121,15 +122,22 @@ export function People() {
   const step = useStory((s) => s.step);
   return (
     <group>
-      <Walker src="/models/customer.glb" where={customerPath} breathe={1} />
+      {/* each model loads in its own Suspense so the speech bubbles (drei Html) never unmount mid-render */}
+      <Suspense fallback={null}>
+        <Walker src="/models/customer.glb" where={customerPath} breathe={1} />
+      </Suspense>
       {/* Murugan behind the counter, hands resting on it */}
-      <Human src="/models/murugan.glb" position={[-0.2, 0.16, -1.85]} rotation={0.1} breathe={2} />
-      <Walker src="/models/passerby.glb" where={passerA} breathe={3} />
-      <Walker src="/models/passerby.glb" where={passerB} breathe={4} />
+      <Suspense fallback={null}>
+        <Human src="/models/murugan.glb" position={[-0.2, 0.16, -1.85]} rotation={0.1} breathe={2} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <Walker src="/models/passerby.glb" where={passerA} breathe={3} />
+        <Walker src="/models/passerby.glb" where={passerB} breathe={4} />
+      </Suspense>
       <Html position={[ANCHOR.customer.x, 2.2, ANCHOR.customer.z]} center zIndexRange={[20, 0]}>
         <Bubble visible={step === stepIndex("ask")}>“Anna, mango lassi irukka?”</Bubble>
       </Html>
-      <Html position={[-0.2, 2.15, -1.25]} center zIndexRange={[20, 0]}>
+      <Html position={[-0.2, 2.1, -1.85]} center zIndexRange={[20, 0]}>
         <Bubble tone="red" visible={step === stepIndex("illa")}>“Illa-mma…” 😔</Bubble>
       </Html>
       <Html position={[ANCHOR.customer.x, 2.2, ANCHOR.customer.z]} center zIndexRange={[20, 0]}>
@@ -314,7 +322,9 @@ function Delivery() {
       {/* cab faces -x (driving toward the shop from the right); branded side faces the street camera */}
       <group ref={truck} rotation-y={-Math.PI / 2}>
         <group ref={body}>
-          <Truck />
+          <Suspense fallback={null}>
+            <Truck />
+          </Suspense>
         </group>
       </group>
       <group ref={crates}>
@@ -398,7 +408,7 @@ function BlindQR() {
 function Transcript() {
   const show = useStep("listen");
   return (
-    <Html position={[ANCHOR.soundbox.x - 0.25, ANCHOR.soundbox.y + 0.32, ANCHOR.soundbox.z]} center zIndexRange={[20, 0]}>
+    <Html position={[ANCHOR.soundbox.x - 0.05, ANCHOR.soundbox.y + 0.32, ANCHOR.soundbox.z]} center zIndexRange={[20, 0]}>
       <div className="pointer-events-none w-[300px] rounded-2xl bg-white p-3 text-left shadow-2xl transition-all duration-500" style={{ opacity: show ? 1 : 0, transform: `translateY(${show ? 0 : 12}px)` }}>
         <p className="text-[11px] font-semibold uppercase tracking-wide text-[#00baf2]">MITRA heard · Tamil</p>
         <p className="mt-1 text-[14px] text-[#0b1f3a]">“இன்னைக்கு எட்டு பேர் மாம்பழ லஸ்ஸி கேட்டாங்க”</p>

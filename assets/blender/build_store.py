@@ -7,7 +7,8 @@ Edits for the story:
     the open cut is covered in three.js by a plaster facade with the Tamil signboard (components/three/Kirana.tsx)
   * café boards re-skinned as Murugan Stores boards (assets/blender/store_boards/make_boards.cjs): price list,
     filter coffee, UPI board, the "COFFEE HOUSE" banner -> "முருகன் ஸ்டோர்ஸ்", the poster -> neighbourhood store
-  * drops seating, plants, food props and the untextured scanned people; decimates heavy props
+  * drops seating, plants, food props, the coffee machines + PC (they blocked the close-ups) and the untextured
+    scanned people
   * frame: café +X (front) -> three.js +Z, café y -> three.js x (counter centred on x = 0), floor at y = 0.16 (footpath
     height), cut plane at z = 0; counter front at z = -0.35, back at z = -1.38, back wall inner face at z = -2.47
 """
@@ -29,7 +30,8 @@ CUT_X, CENTRE_Y, FLOOR = -18.53, 0.26, 0.16
 scene = bpy.context.scene
 
 DROP = re.compile(r"Elm|Alder|Tree|Thuja|Ligustrum|Asparagus|Succulent|Sansevieria|Potted|Planter|Ficus|Plant|Grass|Everett|Diane|Kavon|"
-                  r"Johnny|Jada|Louise|Cheesecake|Muffin|Cake|Banana|Breakfast|Candy|Chocolate|Cup|Tea Cup|Bowls|Vase|Pedestal|Mountain", re.I)
+                  r"Johnny|Jada|Louise|Cheesecake|Muffin|Cake|Banana|Breakfast|Candy|Chocolate|Cup|Tea Cup|Bowls|Vase|Pedestal|Mountain|"
+                  r"Coffee Machine|Computer", re.I)  # machines + PC would block the fridge and soundbox close-ups
 
 # 1) re-skin the café boards
 for img in list(bpy.data.images):

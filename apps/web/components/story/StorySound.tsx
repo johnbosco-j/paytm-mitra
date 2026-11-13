@@ -128,10 +128,12 @@ export function StorySound() {
     <button
       onClick={() => setOn((v) => !v)}
       aria-pressed={on}
-      className="fixed right-4 bottom-4 z-40 inline-flex items-center gap-2 rounded-full bg-white/95 px-4 py-2.5 text-sm font-bold text-[#002e6e] shadow-[0_10px_30px_rgba(0,20,60,0.35)] backdrop-blur hover:bg-white"
+      aria-label={on ? "Sound on" : "Turn on sound"}
+      // phones: a small round button under the header so it never covers the chapter card; desktop: a labelled pill
+      className="fixed top-[84px] right-4 z-40 inline-flex items-center gap-2 rounded-full bg-white/95 p-2.5 text-sm font-bold text-[#002e6e] shadow-[0_10px_30px_rgba(0,20,60,0.35)] backdrop-blur hover:bg-white md:top-auto md:bottom-4 md:px-4"
     >
       {on ? <Volume2 className="size-4 text-[#00baf2]" /> : <VolumeX className="size-4" />}
-      {on ? "Sound on" : "Turn on sound"}
+      <span className="hidden md:inline">{on ? "Sound on" : "Turn on sound"}</span>
       {!on && <span className="relative flex size-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#00baf2] opacity-75" /><span className="relative inline-flex size-2 rounded-full bg-[#00baf2]" /></span>}
     </button>
   );

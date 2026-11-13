@@ -215,7 +215,7 @@ async function icon(name, color = C.blue, size = 256) {
       txt(s, head, o, { x: x + 0.15, y: y + 0.1, w: w - 0.3, h: 0.3, fontSize: 13, bold: true, color: col, fx: "zoom" });
       txt(s, lines.map((l, j) => ({ text: l, options: { bullet: { indent: 10 }, breakLine: j < lines.length - 1 } })), o, { x: x + 0.15, y: y + 0.42, w: w - 0.3, h: h - 0.5, fontSize: 10.5, color: C.mist, valign: "top", paraSpaceAfter: 2, fx: "zoom" });
     };
-    box(0.55, 1.6, 2.7, 1.55, "Merchant app", ["Next.js 16 · React 19 · Tailwind 4", "Paytm-style UI · Tamil / English", "3D story: R3F + GSAP + Lenis + voice", "Blender pipeline: people, truck, café"], C.blue, 2);
+    box(0.55, 1.6, 2.7, 1.55, "Merchant app", ["Next.js 16 · React 19 · Tailwind 4", "Paytm-style UI · Tamil / English", "3D story: R3F + GSAP + Lenis + voice", "Blender pipeline: store, people, truck"], C.blue, 2);
     box(3.65, 1.6, 2.7, 1.55, "API & data", ["FastAPI · Pydantic v2 · SQLAlchemy 2", "Alembic migrations · PostgreSQL 17 verified", "Decimal economics engine", "Trial + pre-order state machines"], C.blue, 3);
     box(6.75, 1.6, 2.7, 1.55, "AI layer", ["Gemini: speech in 22 Indian languages, vision", "MITRA-Lite + Whisper turbo: fully offline", "Rule fallback · hallucination guards", "Grounded answers only"], C.teal, 4);
     box(0.55, 3.4, 4.25, 1.4, "Paytm & payments", ["Paytm Payment Links (staging, official checksum lib)", "UPI QR pre-orders · feature-flagged connectors", "Soundbox voice channel: roadmap with Paytm"], C.amber, 5);

@@ -154,7 +154,7 @@ function Detail({ o, onChanged }: { o: Opportunity; onChanged: () => void }) {
       )}
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <section>
+        <section className="min-w-0">
           <h3 className="mb-2 text-sm font-semibold">Evidence</h3>
           <ul className="space-y-1 text-sm text-muted">
             <li><span className="num text-ink">{o.evidence.ask_total}</span> confirmed customer asks in {o.evidence.window_days} days ({o.evidence.records} records)</li>
@@ -172,7 +172,7 @@ function Detail({ o, onChanged }: { o: Opportunity; onChanged: () => void }) {
           <h3 className="mt-4 mb-2 text-sm font-semibold">Why this score ({o.score_version})</h3>
           <ul className="space-y-1.5">
             {Object.entries(o.components).map(([k, v]) => (
-              <li key={k} className="grid grid-cols-[130px_1fr_40px] items-center gap-2 text-xs">
+              <li key={k} className="grid grid-cols-[110px_1fr_36px] items-center gap-2 text-xs sm:grid-cols-[130px_1fr_40px]">
                 <span className="text-muted">{COMPONENT_LABEL[k] ?? k}</span>
                 <span className="h-1.5 rounded bg-raised"><span className="block h-1.5 rounded bg-signal" style={{ width: `${v * 100}%` }} /></span>
                 <span className="num text-right text-faint">×{o.weights[k]}</span>
@@ -182,7 +182,7 @@ function Detail({ o, onChanged }: { o: Opportunity; onChanged: () => void }) {
           <p className="mt-2 flex gap-1.5 text-[11px] text-faint"><Info className="size-3.5 shrink-0" />A product heuristic to rank what to look at first, not a prediction of sales.</p>
         </section>
 
-        <section>
+        <section className="min-w-0">
           {o.status === "needs_cost" || (!o.product?.cost_price && o.status !== "insufficient_evidence") ? (
             <AddCost o={o} onSaved={onChanged} />
           ) : canMoney ? (

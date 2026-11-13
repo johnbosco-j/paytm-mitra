@@ -11,6 +11,7 @@ import { CameraRig } from "./CameraRig";
 import { Kirana } from "./Kirana";
 import { Lighting, Sky, Street } from "./Street";
 import { StoryFX } from "./StoryFX";
+import { overlayRoot } from "./Overlay";
 
 function Effects({ tier }: { tier: number }) {
   const bloom = useRef<BloomEffect>(null);
@@ -51,7 +52,7 @@ export default function StoryCanvas({ onReady }: { onReady?: () => void }) {
   const [q, setQ] = useState(3);
   const tier = q >= 2 ? 2 : q;
   return (
-    <div aria-hidden className="fixed inset-0 z-0">
+    <div aria-hidden className="fixed inset-0 z-0" ref={(el) => { if (el) overlayRoot.current = el; }}>
       <Canvas
         dpr={q === 3 ? [1, 1.6] : q === 2 ? 1.25 : 1}
         shadows={q > 0}
