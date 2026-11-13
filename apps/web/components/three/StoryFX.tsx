@@ -171,7 +171,7 @@ const strollerPath = (_: number, t: number): Waypoint => {
 
 useGLTF.preload("/models/customer_walk.glb", "/draco/");
 useGLTF.preload("/models/partner_walk.glb", "/draco/");
-useGLTF.preload("/models/murugan.glb", "/draco/");
+useGLTF.preload("/models/naren.glb", "/draco/");
 
 export function People() {
   const step = useStory((s) => s.step);
@@ -182,9 +182,9 @@ export function People() {
         <Person src="/models/customer_walk.glb" where={herPath} spawn={v3(11, 0.16, 1.7)} />
         <Person src="/models/partner_walk.glb" where={himPath} spawn={v3(11, 0.16, 2.35)} />
       </Suspense>
-      {/* Murugan behind the counter, hands resting on it */}
+      {/* Naren behind the counter, hands resting on it */}
       <Suspense fallback={null}>
-        <Human src="/models/murugan.glb" position={[-0.2, 0.16, -1.85]} rotation={0.1} breathe={2} />
+        <Human src="/models/naren.glb" position={[-0.2, 0.16, -1.85]} rotation={0.1} breathe={2} />
       </Suspense>
       <Suspense fallback={null}>
         <Person src="/models/partner_walk.glb" where={strollerPath} spawn={v3(-21, 0.16, 12.4)} tint="#e0a15a" speed={1.1} />

@@ -2,10 +2,10 @@
 
 Run (one character per call, so memory stays low):
   Blender -b -P assets/blender/build_people_v2.py -- <character> <out_dir> [preview.png]
-  character: murugan | customer | passerby
+  character: naren | customer | passerby
 
 Sources (local only, never committed: assets/blender/vendor and "new downloaded assets/"):
-  murugan  <- man/FBX+FILE.Fbx (CC rig, open-collar shirt + slacks)
+  naren  <- man/FBX+FILE.Fbx (CC rig, open-collar shirt + slacks)
   customer <- woman/FBX+File.Fbx (CC rig, top + cargo pants)
   passerby <- man/FBX+FILE.Fbx again, shirt recoloured, walking pose
 Steps: import -> pose arms by aiming bones in world space, palms by forearm roll -> bake pose -> warm skin tone ->
@@ -48,7 +48,7 @@ def material(name, hexcol, rough=0.7, metal=0.0, sheen=0.0):
 
 # ----------------------------------------------------------------------------- import
 bpy.ops.wm.read_factory_settings(use_empty=True)
-if WHO == "murugan":
+if WHO == "naren":
     bpy.ops.import_scene.fbx(filepath=str(SRC / "man" / "FBX+FILE.Fbx"), use_anim=False)
 elif WHO == "customer":
     bpy.ops.import_scene.fbx(filepath=str(SRC / "woman" / "FBX+File.Fbx"), use_anim=False)
@@ -115,7 +115,7 @@ def d(side, out, forward, down):
 
 POSES = {
     # hands resting forward on the counter
-    "murugan": [(lua, d(side_l, 0.22, 0.38, 1)), (lfa, d(side_l, 0.1, 1, 0.1)), (rua, d(side_r, 0.22, 0.38, 1)), (rfa, d(side_r, 0.1, 1, 0.1))],
+    "naren": [(lua, d(side_l, 0.22, 0.38, 1)), (lfa, d(side_l, 0.1, 1, 0.1)), (rua, d(side_r, 0.22, 0.38, 1)), (rfa, d(side_r, 0.1, 1, 0.1))],
     # left arm relaxed, right hand raised a little as she asks
     "customer": [(lua, d(side_l, 0.18, 0.05, 1)), (lfa, d(side_l, 0.08, 0.2, 1)), (rua, d(side_r, 0.25, 0.3, 1)), (rfa, d(side_r, 0.1, 0.8, -0.35))],
     # walking past, arms easy
@@ -166,13 +166,13 @@ def palm_normal(hand_pb):
 for pb, direction in POSES[WHO]:
     aim(pb, direction)
 
-# Palms: turn each forearm until the palm faces the wanted way (down on the counter for Murugan, inward when relaxed).
+# Palms: turn each forearm until the palm faces the wanted way (down on the counter for Naren, inward when relaxed).
 for side_name, fa in (("L", lfa), ("R", rfa)):
     try:
         hand = bone(f"CC_Base_{side_name}_Hand", f"wrist_{side_name}", f"wrist.{side_name}")
     except KeyError:
         continue
-    want = -up if WHO == "murugan" else (-(side_l if side_name == "L" else side_r))
+    want = -up if WHO == "naren" else (-(side_l if side_name == "L" else side_r))
     if WHO == "customer" and side_name == "R":
         want = fwd  # open palm toward the shopkeeper as she asks
     best, best_d = 0, -9.0
@@ -220,14 +220,14 @@ for o in meshes:
     o.matrix_world = Matrix.Rotation(-yaw, 4, "Z") @ Matrix.Translation(-foot) @ o.matrix_world
 bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 height = hi.z - lo.z
-target_h = {"murugan": 1.68, "customer": 1.58, "passerby": 1.72}[WHO]
+target_h = {"naren": 1.68, "customer": 1.58, "passerby": 1.72}[WHO]
 if abs(height - target_h) > 0.05:
     for o in meshes:
         o.scale = (target_h / height,) * 3
     bpy.ops.object.transform_apply(scale=True)
 
 # ----------------------------------------------------------------------------- look: skin tone, clothes, textures
-SKIN = {"murugan": (0.66, 0.53, 0.45), "customer": (0.70, 0.56, 0.47), "passerby": (0.66, 0.53, 0.45)}[WHO]
+SKIN = {"naren": (0.66, 0.53, 0.45), "customer": (0.70, 0.56, 0.47), "passerby": (0.66, 0.53, 0.45)}[WHO]
 
 
 def tint(img, mul):
@@ -282,7 +282,7 @@ for o in meshes:
             tint(img, (0.12, 0.1, 0.09))
             done.add(img.name)
 
-if WHO == "passerby":  # same model as Murugan in the far background, so give him a blue checked-shirt tone
+if WHO == "passerby":  # same model as Naren in the far background, so give him a blue checked-shirt tone
     for o in meshes:
         for sl in o.material_slots:
             img = base_image(sl.material)

@@ -56,9 +56,9 @@ def test_preorder_upi_and_pii(owner_store):
     assert c.post("/api/preorders", json=body).status_code == 422  # no consent
     body["consent_contact"] = True
     assert c.post("/api/preorders", json=body).json()["code"] == "UPI_NOT_SET"
-    assert c.patch("/api/store", json={"upi_vpa": "murugan@okaxis"}).status_code == 200
+    assert c.patch("/api/store", json={"upi_vpa": "naren@okaxis"}).status_code == 200
     p = c.post("/api/preorders", json=body).json()
-    assert p["amount"] == "70.00" and p["phone"] == "••••••2345" and p["pay_url"].startswith("upi://pay?pa=murugan%40okaxis")
+    assert p["amount"] == "70.00" and p["phone"] == "••••••2345" and p["pay_url"].startswith("upi://pay?pa=naren%40okaxis")
     assert "9840012345" not in str(c.get("/api/preorders").json())  # never returned in lists
     assert c.get(f"/api/preorders/{p['id']}/contact").json()["phone"] == "9840012345"  # owner reveal, audited
     assert c.post(f"/api/preorders/{p['id']}/status", json={"status": "paid"}).json()["status"] == "paid"

@@ -47,7 +47,7 @@ export default function Onboarding() {
           <p className="mt-1 text-sm text-muted">You can change all of this later.</p>
         </div>
         <Field label="Shop name">
-          <Input required minLength={2} value={name} onChange={(e) => setName(e.target.value)} placeholder="Murugan Stores" />
+          <Input required minLength={2} value={name} onChange={(e) => setName(e.target.value)} placeholder="Naren Stores" />
         </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Area / city">

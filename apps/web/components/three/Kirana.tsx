@@ -7,7 +7,7 @@ import * as THREE from "three";
 import { reached, stepIndex, useStory } from "@/lib/story";
 import { lassiLabel, plaster, productAtlas, qrStandee, shutter, signboard, wood } from "./textures";
 
-// Store frame (metres): Murugan Stores is the team's downloaded café model, cut in front of its counter
+// Store frame (metres): Naren Stores is the team's downloaded café model, cut in front of its counter
 // (assets/blender/build_store.py). Street-facing opening at z = 0, floor at y = 0.16, counter x ∈ [-3.03, 3.03],
 // z ∈ [-1.38, -0.35], top at y = 1.08; back wall at z = -2.47; building x ∈ [-5, 5], walls 6.55 m, gable apex 9.25 m.
 export const SHOP = { w: 10, d: 5, h: 6.55, floor: 0.16, counterTop: 1.08 };
@@ -329,7 +329,7 @@ function Facade() {
     }
     return new THREE.ExtrudeGeometry(s, { depth: 0.3, bevelEnabled: false });
   }, []);
-  const sign = useMemo(() => signboard("முருகன் ஸ்டோர்ஸ்", "MURUGAN STORES"), []);
+  const sign = useMemo(() => signboard("நரேன் ஸ்டோர்ஸ்", "NAREN STORES"), []);
   const shut = useMemo(() => shutter(), []);
   return (
     <group position={[0, SHOP.floor - 0.16, 0]}>

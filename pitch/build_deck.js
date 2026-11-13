@@ -66,7 +66,7 @@ async function icon(name, color = C.blue, size = 256) {
       { x: 0.55, y: 2.62, w: 6.2, h: 0.5, fontSize: 21, bold: true, italic: true });
     txt(s, [{ text: "Johnbosco J  ·  Jeffrey Figo J  ·  Joe Naren A", options: { bold: true, color: C.white, breakLine: true } }, { text: "Chennai  ·  15 November 2026", options: { color: C.mist } }], 4,
       { x: 0.55, y: 4.25, w: 5.5, h: 0.6, fontSize: 13 });
-    s.addNotes("Every QR in India knows what sold. None of them knows what didn't. This is Murugan Stores in Velachery: our 3D story, built in the app itself.");
+    s.addNotes("Every QR in India knows what sold. None of them knows what didn't. This is Naren Stores in Velachery: our 3D story, built in the app itself.");
   }
 
   // 2 ── PROBLEM: the sale that never existed ───────────────────────────────

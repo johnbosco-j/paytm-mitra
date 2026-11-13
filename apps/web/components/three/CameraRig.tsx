@@ -8,7 +8,7 @@ import { STEP_IDS, STEP_TOD, useStory, type StepId } from "@/lib/story";
 
 // One camera shot per chapter (scene metres; shop facade at z = 0, street along x).
 const SHOTS: Record<StepId, { pos: [number, number, number]; look: [number, number, number]; fov?: number }> = {
-  intro: { pos: [7.2, 4.3, 14.8], look: [-0.6, 3.0, 0], fov: 40 },
+  intro: { pos: [8.6, 4.6, 17.6], look: [-0.2, 2.9, 0], fov: 40 },
   arrive: { pos: [5.8, 1.7, 7.8], look: [0.8, 1.5, 0.2], fov: 40 },
   ask: { pos: [3.4, 1.8, 4.3], look: [0.8, 1.5, 0.3], fov: 38 },
   illa: { pos: [1.4, 1.85, 2.4], look: [-1.5, 1.5, -1.9], fov: 40 },
@@ -58,7 +58,7 @@ export function CameraRig() {
     cam.lookAt(tmp.look);
     const fov = (shot.fov ?? 42) + (portrait ? 6 : 0);
     const wide = state.size.width >= 1024 && id !== "cta";
-    const film = wide ? (id === "intro" ? -0.42 : -0.3) * Math.tan(THREE.MathUtils.degToRad(fov / 2)) * cam.aspect * cam.getFilmWidth() : 0;
+    const film = wide ? (id === "intro" ? -0.56 : -0.3) * Math.tan(THREE.MathUtils.degToRad(fov / 2)) * cam.aspect * cam.getFilmWidth() : 0;
     const nf = THREE.MathUtils.damp(cam.fov, fov, 2.5, dt);
     const nfo = THREE.MathUtils.damp(cam.filmOffset, film, 3, dt);
     if (Math.abs(nf - cam.fov) > 1e-3 || Math.abs(nfo - cam.filmOffset) > 1e-4) {

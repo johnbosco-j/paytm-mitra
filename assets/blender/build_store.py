@@ -1,12 +1,12 @@
-"""Murugan Stores, built from the team's downloaded "Coffee Bar 3D" café: the back half of the café (counter, coffee
+"""Naren Stores, built from the team's downloaded "Coffee Bar 3D" café: the back half of the café (counter, coffee
 machines, billing PC, back wall with menu boards, ceiling) becomes a clean, open-front Chennai store.
 
 Run: Blender -b assets/blender/vendor/dl/coffee_lite.blend -P assets/blender/build_store.py -- apps/web/public/models [preview.png]
 Edits for the story:
   * cut the building just in front of the counter (café x = -18.53), so the counter faces the street like a kirana;
     the open cut is covered in three.js by a plaster facade with the Tamil signboard (components/three/Kirana.tsx)
-  * café boards re-skinned as Murugan Stores boards (assets/blender/store_boards/make_boards.cjs): price list,
-    filter coffee, UPI board, the "COFFEE HOUSE" banner -> "முருகன் ஸ்டோர்ஸ்", the poster -> neighbourhood store
+  * café boards re-skinned as Naren Stores boards (assets/blender/store_boards/make_boards.cjs): price list,
+    filter coffee, UPI board, the "COFFEE HOUSE" banner -> "நரேன் ஸ்டோர்ஸ்", the poster -> neighbourhood store
   * drops seating, plants, food props, the coffee machines + PC (they blocked the close-ups) and the untextured
     scanned people
   * frame: café +X (front) -> three.js +Z, café y -> three.js x (counter centred on x = 0), floor at y = 0.16 (footpath

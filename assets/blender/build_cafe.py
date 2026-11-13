@@ -1,6 +1,6 @@
 """The big modern café down the road (team's downloaded "Coffee Bar 3D" asset), cut down for the web.
 
-In the story it is where Priya walks after Murugan says "illa": the sale he never sees goes to the bigger store.
+In the story it is where Priya walks after Naren says "illa": the sale he never sees goes to the bigger store.
 Run: Blender -b assets/blender/vendor/dl/coffee_lite.blend -P assets/blender/build_cafe.py -- apps/web/public/models [preview.png]
 (coffee_lite.blend = the 2.7 GB FBX imported once and saved, with the 5M-polygon trees removed.)
 Keeps the building, glazing and the café interior visible through the glass; drops plants, untextured scanned people,

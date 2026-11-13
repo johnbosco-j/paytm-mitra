@@ -1,4 +1,4 @@
-// Murugan Stores boards that replace the café's menu/banner textures (same pixel sizes as the originals).
+// Naren Stores boards that replace the café's menu/banner textures (same pixel sizes as the originals).
 // Run: NODE_PATH=apps/web/node_modules node assets/blender/store_boards/make_boards.cjs
 const sharp = require("sharp");
 const path = require("path");
@@ -38,8 +38,8 @@ const boards = [
   // store banner (wlccccc.jpg 697x248) — was "COFFEE HOUSE"
   ["wlccccc.jpg", 697, 248, `
     <rect width="697" height="248" fill="#7a1d12"/><rect x="10" y="10" width="677" height="228" fill="none" stroke="#e7c06a" stroke-width="4"/>
-    <text x="348" y="108" font-family="${T}" font-size="70" font-weight="700" fill="#ffe9a8" text-anchor="middle">முருகன் ஸ்டோர்ஸ்</text>
-    <text x="348" y="168" font-family="${S}" font-size="40" font-weight="800" fill="#fff" text-anchor="middle" letter-spacing="6">MURUGAN STORES</text>
+    <text x="348" y="108" font-family="${T}" font-size="70" font-weight="700" fill="#ffe9a8" text-anchor="middle">நரேன் ஸ்டோர்ஸ்</text>
+    <text x="348" y="168" font-family="${S}" font-size="40" font-weight="800" fill="#fff" text-anchor="middle" letter-spacing="6">NAREN STORES</text>
     <text x="348" y="212" font-family="${S}" font-size="24" fill="#f3d9a4" text-anchor="middle">Velachery · since 2004</text>`],
   // wide poster (1600w-duoZ6eo9cJM.jpg 1600x800) — was "GRAND OPENING"
   ["1600w-duoZ6eo9cJM.jpg", 1600, 800, `
@@ -47,7 +47,7 @@ const boards = [
     <text x="800" y="102" font-family="${S}" font-size="64" font-weight="800" fill="#fff" text-anchor="middle">YOUR NEIGHBOURHOOD STORE</text>
     <text x="800" y="330" font-family="${T}" font-size="110" font-weight="700" fill="#7a1d12" text-anchor="middle">பால் · மளிகை · காபி</text>
     <text x="800" y="460" font-family="${S}" font-size="64" fill="#3b2f25" text-anchor="middle">Milk · Groceries · Snacks · Filter coffee</text>
-    <text x="800" y="640" font-family="${S}" font-size="54" font-weight="700" fill="#b3261e" text-anchor="middle">Didn't find it? Ask Murugan anna. We'll get it.</text>`],
+    <text x="800" y="640" font-family="${S}" font-size="54" font-weight="700" fill="#b3261e" text-anchor="middle">Didn't find it? Ask Naren anna. We'll get it.</text>`],
 ];
 (async () => {
   for (const [name, w, h, body] of boards) {

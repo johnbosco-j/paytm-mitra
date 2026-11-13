@@ -29,7 +29,7 @@ from app.models import (
 )
 from app.security import hash_password
 
-OWNER = ("demo.owner@mitra.test", "Murugan K")
+OWNER = ("demo.owner@mitra.test", "Joe Naren A")
 STAFF = ("demo.staff@mitra.test", "Ravi (staff)")
 PASSWORD = "mitra-demo-2026"  # local demo only
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -64,6 +64,7 @@ def run() -> None:
                 u = User(email=email, name=name, password_hash=hash_password(PASSWORD))
                 db.add(u)
                 db.flush()
+            u.name = name  # keep demo names current when the story's cast changes
             users[email] = u
         owner, staff = users[OWNER[0]], users[STAFF[0]]
         # remove previous demo store(s) owned by the demo owner
@@ -77,7 +78,7 @@ def run() -> None:
         db.flush()
 
         store = Store(
-            name="Murugan Stores", city="Velachery, Chennai", category="kirana", language="ta", trial_budget=Decimal("2000")
+            name="Naren Stores", city="Velachery, Chennai", category="kirana", language="ta", trial_budget=Decimal("2000")
         )
         db.add(store)
         db.flush()

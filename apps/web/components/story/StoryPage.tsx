@@ -14,14 +14,14 @@ const StoryCanvas = dynamic(() => import("@/components/three/StoryCanvas"), { ss
 
 type Chapter = { kicker: string; title: string; body: string; chips?: string[] };
 const CHAPTERS: Chapter[] = [
-  { kicker: "6:40 pm · Velachery, Chennai", title: "Murugan has opened this shutter every morning for 22 years", body: "He knows every family on the street by name. The QR on his counter takes every payment. It just can't hear his customers.", chips: ["Kirana", "Tamil-speaking owner"] },
+  { kicker: "6:40 pm · Velachery, Chennai", title: "Naren opens this shutter every morning, just like his father did", body: "He knows every family on the street by name. The QR on his counter takes every payment. It just can't hear his customers.", chips: ["Kirana", "Tamil-speaking owner"] },
   { kicker: "The ask", title: "“Anna, mango lassi irukka?”", body: "Priya stops on her way home from work. It's hot, and she wants a chilled mango lassi. She is the third person to ask today." },
   { kicker: "The answer", title: "“Illa-mma…”", body: "He says it kindly, the way he has said it a hundred times. She smiles, and walks down the road to City Café & Mart. The sale didn't fail. It just went somewhere else, and nobody wrote it down.", chips: ["Lost sale", "Lost customer?"] },
   { kicker: "The blind spot", title: "The QR never sees it", body: "No payment means no record. Every payments dashboard, even the AI ones, sees only what sold, never what was asked for and missed.", chips: ["₹0 recorded", "0 signals"] },
-  { kicker: "A week later", title: "24 asks. Zero data.", body: "It happened 24 times in 7 days. Murugan remembers maybe three. Nobody wrote it down." },
+  { kicker: "A week later", title: "24 asks. Zero data.", body: "It happened 24 times in 7 days. Naren remembers maybe three. Nobody wrote it down." },
   { kicker: "MITRA listens", title: "One tap. Speak any of India's 22 languages.", body: "“Innaiku ettu per mango lassi ketanga.” Or Hindi, Bengali, Telugu, Marathi, Odia… or a mix. MITRA turns it into a confirmed record: item, how many asked, why it wasn't sold. Tamil and English even work fully offline on our own model, MITRA-Lite.", chips: ["22 languages + code-mix", "Offline-capable", "Merchant confirms"] },
   { kicker: "MITRA evaluates", title: "Maths, not guesses", body: "24 asks aren't 24 sales. With cost ₹22 and price ₹35, MITRA suggests a cautious 16-bottle trial: ₹352 outlay, ₹104–₹208 gross profit if 8–16 sell. No cost price, no profit promise.", chips: ["Deterministic ₹ maths", "Risk shown"] },
-  { kicker: "Murugan decides", title: "Owner approves. MITRA never acts alone.", body: "Staff can propose, only the owner can spend. MITRA drafts the supplier WhatsApp in Tamil, and Murugan presses send.", chips: ["Owner-only", "Audit trail"] },
+  { kicker: "Naren decides", title: "Owner approves. MITRA never acts alone.", body: "Staff can propose, only the owner can spend. MITRA drafts the supplier WhatsApp in Tamil, and Naren presses send.", chips: ["Owner-only", "Audit trail"] },
   { kicker: "Next morning", title: "Sri Lakshmi Dairy's truck pulls up", body: "Sixteen bottles, exactly what the trial said. And the customers who asked can pre-order and pay in advance with a Paytm payment link, so the missed sale becomes a confirmed one.", chips: ["Pre-order", "Paytm payment link"] },
   { kicker: "MITRA proves it", title: "Priya comes back. 14 of 16 sold.", body: "+₹182 gross profit: revenue ₹490, cost of goods ₹308, 2 bottles left (₹44). Predicted vs actual, recorded, so the next decision is smarter, and the customer who heard “illa” now hears “ready”.", chips: ["Predicted vs actual", "Customer won back"] },
 ];
@@ -29,7 +29,7 @@ const CHAPTERS: Chapter[] = [
 /** Hero headline: word-by-word blur-in, second line in an animated cyan→teal gradient. */
 function HeroLine({ text, delay, accent = false }: { text: string; delay: number; accent?: boolean }) {
   return (
-    <span className={accent ? "hero-gradient" : undefined}>
+    <span className={accent ? "hero-gradient" : "hero-plain"}>
       {text.split(" ").map((w, i) => (
         <span key={i} className="hero-word" style={{ animationDelay: `${delay + i * 0.07}s` }}>
           {w}
@@ -70,7 +70,7 @@ function Loader({ done }: { done: boolean }) {
     <div className={`fixed inset-0 z-50 grid place-items-center bg-[#002e6e] transition-opacity duration-1000 ${done ? "pointer-events-none opacity-0" : "opacity-100"}`}>
       <div className="text-center text-white">
         <p className="text-4xl font-black tracking-tight">MITRA</p>
-        <p className="mt-2 text-sm text-[#8fd8f5]">Building Murugan Stores…</p>
+        <p className="mt-2 text-sm text-[#8fd8f5]">Building Naren Stores…</p>
         <p className="mt-6 text-[11px] font-semibold tracking-[0.2em] text-white/50 uppercase">Made by RivenDevs</p>
         <div className="mx-auto mt-5 h-1 w-48 overflow-hidden rounded-full bg-white/15">
           <div className="h-full w-1/2 animate-[loader_1.1s_ease-in-out_infinite] rounded-full bg-[#00baf2]" />

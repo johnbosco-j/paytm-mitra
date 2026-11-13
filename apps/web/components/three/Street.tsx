@@ -356,7 +356,7 @@ function ParkedScooter({ position, color }: { position: [number, number, number]
 }
 
 /** The big modern café-store down the road (team asset, cut down in assets/blender/build_cafe.py).
- * It's where Priya buys her drink after "illa": the sale Murugan never sees. */
+ * It's where Priya buys her drink after "illa": the sale Naren never sees. */
 function BigStore() {
   const { scene } = useGLTF("/models/cafe.glb", "/draco/");
   const model = useMemo(() => {
@@ -366,7 +366,7 @@ function BigStore() {
       if (!m.isMesh) return;
       m.castShadow = true;
       m.receiveShadow = true;
-      // same building as Murugan's store, so dress it as a dark, glossy chain store: charcoal walls, untouched glass
+      // same building as Naren's store, so dress it as a dark, glossy chain store: charcoal walls, untouched glass
       const mat = m.material as THREE.MeshStandardMaterial;
       if (mat?.color && !mat.transparent && mat.color.getHSL({ h: 0, s: 0, l: 0 }).l > 0.55) {
         const dark = mat.clone();

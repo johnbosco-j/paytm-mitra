@@ -5,7 +5,7 @@
 | Time | Say | Do |
 |---|---|---|
 | 0:00 | "Every QR in India knows what sold. None of them knows what *didn't*." | Open http://localhost:3000 and scroll the **3D story** slowly: the ask, the "illa", the blind QR, the 24 asks piling up. (15 s) |
-| 0:15 | "Murugan runs a kirana in Velachery. A customer asks for mango lassi. He says *illa*. No payment, so no record." | Owner window → **Today**. Point at "16 asks for Mango Lassi". |
+| 0:15 | "Naren runs a kirana in Velachery. A customer asks for mango lassi. He says *illa*. No payment, so no record." | Owner window → **Today**. Point at "16 asks for Mango Lassi". |
 | 0:35 | "He taps once and talks the way he talks." | **Missed demand** → tap mic → say: *"Innaiku ettu per mango lassi ketanga, illa nu sonnen. Rendu peru rose milk kettanga."* Tap again. |
 | 0:55 | "Gemini understood Tanglish. Nothing is saved until he confirms. He can fix anything." | Show transcript, the English gloss and the "matches catalog" badge → **Confirm & save**. |
 | 1:15 | "Now 24 asks in 7 days. MITRA does *not* say buy 24. Asks aren't sales." | **Opportunities** → Mango Lassi (score ~99). Read the reasons: "two-thirds of weekly asks" → 16. |

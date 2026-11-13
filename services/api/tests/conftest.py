@@ -37,6 +37,6 @@ def new_client() -> TestClient:
 @pytest.fixture()
 def owner_store(client):
     signup(client, "owner@example.com")
-    s = client.post("/api/stores", json={"name": "Murugan Stores", "city": "Chennai"}).json()
+    s = client.post("/api/stores", json={"name": "Naren Stores", "city": "Chennai"}).json()
     client.headers["X-Store-Id"] = s["id"]
     return client, s["id"]

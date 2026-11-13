@@ -98,7 +98,7 @@ export default function TeamPage() {
               {owner && edit.trial_budget !== undefined && <Button onClick={() => patch({ trial_budget: edit.trial_budget || null }, "Trial budget saved")}>Save</Button>}
             </div>
             <div className="flex items-end gap-2">
-              <Field label="Shop UPI ID" hint="Used for the pre-order payment QR, e.g. murugan@okaxis">
+              <Field label="Shop UPI ID" hint="Used for the pre-order payment QR, e.g. naren@okaxis">
                 <Input disabled={!owner} value={edit.upi_vpa ?? s.upi_vpa ?? ""} onChange={(e) => setEdit({ ...edit, upi_vpa: e.target.value })} placeholder="yourname@bank" />
               </Field>
               {owner && edit.upi_vpa !== undefined && <Button onClick={() => patch({ upi_vpa: edit.upi_vpa || null }, "UPI ID saved")}>Save</Button>}
