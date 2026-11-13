@@ -8,6 +8,7 @@ import { api, ApiError, newKey, type DemandRequest, type DraftRequest, type Extr
 import { shortDate, titleCase } from "@/lib/format";
 import { reasonLabel } from "@/lib/i18n";
 import { startRecording, type Recorder } from "@/lib/recorder";
+import { LanguagePicker, languageLabel, useLanguages } from "@/components/language-picker";
 import { useApiData } from "@/lib/useApiData";
 
 type Draft = DraftRequest & { key: string; count: string };
@@ -17,6 +18,9 @@ export default function DemandPage() {
   const ledger = useApiData<DemandRequest[]>("/demand?days=30", store?.id);
   const [phase, setPhase] = useState<"idle" | "recording" | "processing" | "review">("idle");
   const [text, setText] = useState("");
+  const [speakLang, setSpeakLang] = useState<string | null>(null);
+  const langs = useLanguages();
+  const noteLang = speakLang ?? store?.language ?? "ta";
   const [extraction, setExtraction] = useState<Extraction | null>(null);
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [err, setErr] = useState<string | null>(null);
@@ -50,6 +54,7 @@ export default function DemandPage() {
         const wav = await rec.current!.stop();
         const fd = new FormData();
         fd.append("audio", wav, "note.wav");
+        fd.append("language", noteLang);
         await extract(fd);
       } catch (e) {
         setPhase("idle");
@@ -89,6 +94,7 @@ export default function DemandPage() {
     setPhase("processing");
     const fd = new FormData();
     fd.append("text", text.trim());
+    fd.append("language", noteLang);
     await extract(fd);
   }
 
@@ -169,9 +175,13 @@ export default function DemandPage() {
             )}
           </div>
           <div>
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <label htmlFor="speak-lang" className="text-sm text-muted">Speaking in</label>
+              <LanguagePicker id="speak-lang" value={noteLang} onChange={setSpeakLang} className="w-auto max-w-[260px] py-1.5 text-sm" />
+            </div>
             <p className="mb-2 text-sm text-muted">
-              Say it the way you&apos;d tell a friend, in Tamil, Tanglish or English:{" "}
-              <span className="text-ink">“Innaiku 8 per mango lassi ketanga, illa nu sonnen.”</span>
+              Any of India&apos;s 22 languages, English or a mix, the way you&apos;d tell a friend:{" "}
+              <span className="text-ink">“Innaiku 8 per mango lassi ketanga”</span> · <span className="text-ink">“आज आठ लोगों ने लस्सी माँगी”</span>
             </p>
             <form onSubmit={extractText} className="flex flex-col gap-2 sm:flex-row">
               <label htmlFor="typed" className="sr-only">{t.or_type}</label>
@@ -200,7 +210,7 @@ export default function DemandPage() {
           {extraction?.warning && <p className="mb-3 rounded-lg bg-caution/10 px-3 py-2 text-xs text-caution">{extraction.warning}</p>}
           {extraction?.transcript && (
             <div className="mb-4 rounded-xl border border-line bg-canvas p-3 text-sm">
-              <p className="text-xs text-faint">Heard ({extraction.language})</p>
+              <p className="text-xs text-faint">Heard in {languageLabel(langs, extraction.language)}</p>
               <p className="mt-1">“{extraction.transcript}”</p>
               {extraction.english_gloss && <p className="mt-1 text-xs text-muted">{extraction.english_gloss}</p>}
             </div>

@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "MITRA for Paytm merchants",
     short_name: "MITRA",
-    description: "Capture missed customer demand by voice in Tamil or English and turn it into safe, profitable stocking decisions.",
+    description: "Capture missed customer demand by voice in any of India's 22 languages and turn it into safe, profitable stocking decisions.",
     start_url: "/app",
     scope: "/",
     display: "standalone",

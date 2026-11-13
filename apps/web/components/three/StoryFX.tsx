@@ -6,7 +6,6 @@ import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { reached, stepIndex, useStory, type StepId } from "@/lib/story";
 import { ANCHOR } from "./Kirana";
-import { AutoRickshaw } from "./Street";
 
 const useStep = (id: StepId) => {
   const s = useStory((x) => x.step);
@@ -30,10 +29,10 @@ function Bubble({ children, tone = "light", visible }: { children: React.ReactNo
   );
 }
 
-/** Realistic people: Blender Studio CC0 human base meshes, dressed + posed in assets/blender/build_people.py. */
-function Human({ src, position, rotation = 0, scale = 1, breathe = 0 }: { src: string; position: [number, number, number]; rotation?: number; scale?: number; breathe?: number }) {
+/** Realistic people: the team's Character Creator models, posed with their own skeletons in assets/blender/build_people_v2.py. */
+function useHuman(src: string) {
   const { scene } = useGLTF(src, "/draco/");
-  const model = useMemo(() => {
+  return useMemo(() => {
     const c = scene.clone(true);
     c.traverse((o) => {
       const m = o as THREE.Mesh;
@@ -44,9 +43,13 @@ function Human({ src, position, rotation = 0, scale = 1, breathe = 0 }: { src: s
     });
     return c;
   }, [scene]);
+}
+
+function Human({ src, position, rotation = 0, scale = 1, breathe = 0 }: { src: string; position: [number, number, number]; rotation?: number; scale?: number; breathe?: number }) {
+  const model = useHuman(src);
   const g = useRef<THREE.Group>(null);
   useFrame((state) => {
-    // subtle idle breathing / sway so nobody looks frozen
+    // subtle idle breathing so nobody looks frozen
     if (g.current && breathe) g.current.scale.y = scale * (1 + Math.sin(state.clock.elapsedTime * 1.6 + breathe) * 0.004);
   });
   return (
@@ -55,6 +58,61 @@ function Human({ src, position, rotation = 0, scale = 1, breathe = 0 }: { src: s
     </group>
   );
 }
+
+type Waypoint = { at: THREE.Vector3; face: number };
+const v3 = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
+
+/** A person who walks between story positions: eased glide, a small step bob and a turn toward where they're going. */
+function Walker({ src, where, breathe = 1 }: { src: string; where: (step: number) => Waypoint; breathe?: number }) {
+  const model = useHuman(src);
+  const g = useRef<THREE.Group>(null);
+  const start = useRef<Waypoint | null>(null);
+  useFrame((state, dt) => {
+    const st = useStory.getState();
+    const target = where(st.step);
+    if (!g.current) return;
+    if (!start.current || st.reduced) {
+      start.current = target;
+      g.current.position.copy(target.at);
+      g.current.rotation.y = target.face;
+      return;
+    }
+    const p = g.current.position;
+    const to = target.at;
+    const dist = Math.hypot(to.x - p.x, to.z - p.z);
+    const moving = dist > 0.05;
+    // walk at ~1.3 m/s, turning to face the direction of travel, then settle into the scene pose
+    const k = Math.min(1, (1.3 * dt) / Math.max(dist, 1e-3));
+    p.x += (to.x - p.x) * k;
+    p.z += (to.z - p.z) * k;
+    const heading = moving ? Math.atan2(to.x - p.x, to.z - p.z) : target.face;
+    let d = heading - g.current.rotation.y;
+    d = Math.atan2(Math.sin(d), Math.cos(d));
+    g.current.rotation.y += d * Math.min(1, dt * 6);
+    const t = state.clock.elapsedTime;
+    p.y = to.y + (moving ? Math.abs(Math.sin(t * 7.5)) * 0.025 : 0);
+    g.current.rotation.z = moving ? Math.sin(t * 7.5) * 0.02 : 0;
+    g.current.scale.y = 1 + (moving ? 0 : Math.sin(t * 1.6 + breathe) * 0.004);
+  });
+  return (
+    <group ref={g}>
+      <primitive object={model} />
+    </group>
+  );
+}
+
+const COUNTER: Waypoint = { at: v3(ANCHOR.customer.x, ANCHOR.customer.y, ANCHOR.customer.z), face: Math.PI + 0.6 };
+/** Priya's day: walks up, asks, hears "illa", walks away; next day comes back for the pre-order she paid for. */
+function customerPath(step: number): Waypoint {
+  if (step <= stepIndex("intro")) return { at: v3(9, 0.16, 1.7), face: -Math.PI / 2 };
+  if (step <= stepIndex("illa")) return COUNTER;
+  if (step < stepIndex("prove")) return { at: v3(-24.5, 0.16, 1.9), face: Math.PI }; // into City Café & Mart
+  return COUNTER;
+}
+/** Passers-by keep the street alive, crossing the frame as the story moves on. */
+const passerA = (step: number): Waypoint => ({ at: v3(step % 2 ? -7.5 : 7.5, 0.16, 1.15), face: step % 2 ? -Math.PI / 2 : Math.PI / 2 });
+const passerB = (step: number): Waypoint => ({ at: v3(step % 2 ? 9 : -9, 0.16, 12.2), face: step % 2 ? Math.PI / 2 : -Math.PI / 2 });
+
 useGLTF.preload("/models/customer.glb", "/draco/");
 useGLTF.preload("/models/murugan.glb", "/draco/");
 useGLTF.preload("/models/passerby.glb", "/draco/");
@@ -63,18 +121,19 @@ export function People() {
   const step = useStory((s) => s.step);
   return (
     <group>
-      {/* customer on the footpath, turned toward the counter */}
-      <Human src="/models/customer.glb" position={[ANCHOR.customer.x, ANCHOR.customer.y, ANCHOR.customer.z]} rotation={Math.PI + 0.6} breathe={1} />
-      {/* Murugan behind the counter */}
-      <Human src="/models/murugan.glb" position={[-0.2, 0, -1.05]} rotation={0.25} breathe={2} />
-      {/* passers-by */}
-      <Human src="/models/passerby.glb" position={[-6.5, 0.16, 1.1]} rotation={1.4} breathe={3} />
-      <Human src="/models/passerby.glb" position={[8.2, 0.16, 12.2]} rotation={-1.2} scale={0.97} breathe={4} />
+      <Walker src="/models/customer.glb" where={customerPath} breathe={1} />
+      {/* Murugan behind the counter, hands resting on it */}
+      <Human src="/models/murugan.glb" position={[-0.2, 0.02, -1.0]} rotation={0.2} breathe={2} />
+      <Walker src="/models/passerby.glb" where={passerA} breathe={3} />
+      <Walker src="/models/passerby.glb" where={passerB} breathe={4} />
       <Html position={[ANCHOR.customer.x, 2.2, ANCHOR.customer.z]} center zIndexRange={[20, 0]}>
         <Bubble visible={step === stepIndex("ask")}>“Anna, mango lassi irukka?”</Bubble>
       </Html>
       <Html position={[-0.2, 2.15, -1.25]} center zIndexRange={[20, 0]}>
-        <Bubble tone="red" visible={step === stepIndex("illa")}>“Illa…” 😔</Bubble>
+        <Bubble tone="red" visible={step === stepIndex("illa")}>“Illa-mma…” 😔</Bubble>
+      </Html>
+      <Html position={[ANCHOR.customer.x, 2.2, ANCHOR.customer.z]} center zIndexRange={[20, 0]}>
+        <Bubble tone="green" visible={step === stepIndex("prove")}>“Pre-ordered on Paytm, ready!” 🥭</Bubble>
       </Html>
     </group>
   );
@@ -208,37 +267,61 @@ function ApproveMessage() {
   );
 }
 
+/** The supplier's truck (team asset, rebranded in assets/blender/build_truck.py) drives in, unloads lassi crates. */
+function Truck() {
+  const { scene } = useGLTF("/models/truck.glb", "/draco/");
+  const model = useMemo(() => {
+    const c = scene.clone(true);
+    c.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (m.isMesh) {
+        m.castShadow = true;
+        m.receiveShadow = true;
+      }
+    });
+    return c;
+  }, [scene]);
+  return <primitive object={model} />;
+}
+useGLTF.preload("/models/truck.glb", "/draco/");
+
 function Delivery() {
-  const auto = useRef<THREE.Group>(null);
+  const truck = useRef<THREE.Group>(null);
+  const body = useRef<THREE.Group>(null);
   const crates = useRef<THREE.Group>(null);
-  const x = useRef(-40);
+  const x = useRef(40);
   useFrame((_, dt) => {
     const st = useStory.getState();
     const go = st.step >= stepIndex("deliver");
-    const target = go ? 2.6 : -40;
-    x.current = go ? THREE.MathUtils.damp(x.current, target, 0.9, dt) : -40;
-    if (auto.current) {
-      auto.current.position.set(x.current, 0, 4.4);
-      auto.current.children[0].position.y = Math.sin(st.stepT * 30) * 0.008 * (Math.abs(target - x.current) > 0.5 ? 1 : 0);
+    const target = go ? 3.1 : 40;
+    x.current = go ? THREE.MathUtils.damp(x.current, target, 0.8, dt) : 40;
+    const driving = Math.abs(target - x.current) > 0.4;
+    if (truck.current) truck.current.position.set(x.current, 0.02, 4.6);
+    if (body.current) {
+      body.current.position.y = driving ? Math.sin(st.stepT * 22) * 0.012 : 0;
+      body.current.rotation.z = driving ? -0.012 : 0; // squat under braking
     }
     if (crates.current) {
-      const arrived = go && Math.abs(target - x.current) < 0.6;
+      const arrived = go && !driving;
       crates.current.children.forEach((c, i) => {
-        const s = THREE.MathUtils.damp(c.scale.x, arrived ? 1 : 0.0001, 4 + i, dt);
+        const s = THREE.MathUtils.damp(c.scale.x, arrived ? 1 : 0.0001, 3 + i, dt);
         c.scale.setScalar(s);
       });
     }
   });
   return (
     <group>
-      <group ref={auto}>
-        <AutoRickshaw />
+      {/* cab faces -x (driving toward the shop from the right); branded side faces the street camera */}
+      <group ref={truck} rotation-y={-Math.PI / 2}>
+        <group ref={body}>
+          <Truck />
+        </group>
       </group>
       <group ref={crates}>
         {[[1.1, 0.33, 1.6], [1.6, 0.33, 1.75], [1.35, 0.63, 1.68]].map((p, i) => (
           <mesh key={i} position={p as [number, number, number]} scale={0.0001} castShadow>
             <boxGeometry args={[0.45, 0.3, 0.35]} />
-            <meshStandardMaterial color={i === 2 ? "#ffb703" : "#d62828"} roughness={0.6} />
+            <meshStandardMaterial color={i === 2 ? "#ffb703" : "#0b6b3a"} roughness={0.6} />
           </mesh>
         ))}
       </group>

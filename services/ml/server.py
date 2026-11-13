@@ -16,7 +16,9 @@ import threading
 import time
 from pathlib import Path
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 
 from datagen import SYSTEM
@@ -27,9 +29,48 @@ MODEL = os.environ.get("MITRA_LITE_MODEL") or (str(FUSED) if FUSED.exists() else
 ADAPTER = os.environ.get("MITRA_LITE_ADAPTER") or (None if FUSED.exists() else str(HERE / "adapters" / "mitra-lite"))
 WHISPER = os.environ.get("MITRA_WHISPER_MODEL") or (str(HERE / "models" / "whisper-large-v3-turbo") if (HERE / "models" / "whisper-large-v3-turbo").exists() else None)
 
-app = FastAPI(title="MITRA-Lite", version="1.0")
+# shop-vocabulary primers that nudge Whisper toward shop words in a few languages
+PROMPTS = {
+    "ta": "கடை, வாடிக்கையாளர், கேட்டாங்க, லஸ்ஸி, பால், மாவு",
+    "hi": "दुकान, ग्राहक, माँगा, दूध, आटा, लस्सी",
+    "te": "దుకాణం, కస్టమర్, అడిగారు, పాలు, పిండి",
+    "ml": "കട, ഉപഭോക്താവ്, ചോദിച്ചു, പാൽ, മാവ്",
+    "kn": "ಅಂಗಡಿ, ಗ್ರಾಹಕ, ಕೇಳಿದರು, ಹಾಲು, ಹಿಟ್ಟು",
+    "bn": "দোকান, খদ্দের, চাইল, দুধ, আটা",
+}
 _lock = threading.Lock()  # MLX generation is not re-entrant; serialise requests
-_state: dict = {}
+_state: dict = {"warm": False}
+
+
+def _warmup():
+    """Load both models and run one tiny pass each, so the first real voice note is fast (cold start was ~50 s)."""
+    try:
+        t0 = time.time()
+        from mlx_lm import generate
+
+        st = _load()
+        with _lock:
+            generate(st["model"], st["tok"], prompt="hi", max_tokens=1, sampler=st["sampler"], verbose=False)
+        if WHISPER and Path(WHISPER).exists():
+            import numpy as np
+            import mlx_whisper
+
+            with _lock:
+                mlx_whisper.transcribe(np.zeros(16000, dtype=np.float32), path_or_hf_repo=WHISPER, language="ta")
+        _state["warm"] = True
+        print(f"[mitra-lite] warm in {time.time() - t0:.1f}s", flush=True)
+    except Exception as e:  # warm-up is best effort; requests still load lazily
+        print(f"[mitra-lite] warm-up skipped: {e}", flush=True)
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    if os.environ.get("MITRA_ML_WARMUP", "1") != "0":
+        threading.Thread(target=_warmup, daemon=True).start()
+    yield
+
+
+app = FastAPI(title="MITRA-Lite", version="1.0", lifespan=lifespan)
 
 
 def _load():
@@ -52,7 +93,7 @@ class ExtractIn(BaseModel):
 @app.get("/health")
 def health():
     return {"ok": True, "model": _state.get("name", Path(MODEL).name), "speech": bool(WHISPER and Path(WHISPER).exists()),
-            "loaded": "model" in _state}
+            "loaded": "model" in _state, "warm": _state["warm"]}
 
 
 @app.post("/extract")
@@ -79,7 +120,7 @@ def extract(body: ExtractIn):
 
 
 @app.post("/transcribe")
-async def transcribe(audio: UploadFile = File(...)):
+async def transcribe(audio: UploadFile = File(...), language: str = Form("")):
     if not (WHISPER and Path(WHISPER).exists()):
         raise HTTPException(501, "No offline speech model installed")
     import tempfile
@@ -90,6 +131,9 @@ async def transcribe(audio: UploadFile = File(...)):
         f.write(await audio.read())
         f.flush()
         with _lock:
-            r = mlx_whisper.transcribe(f.name, path_or_hf_repo=WHISPER, language=None, task="transcribe",
-                                       initial_prompt="கடை, வாடிக்கையாளர், கேட்டாங்க, லஸ்ஸி, பால், மாவு")
-    return {"text": r.get("text", "")}
+            from mlx_whisper.tokenizer import LANGUAGES
+
+            lang = language if language in LANGUAGES else None  # None = let Whisper detect (14 of the 22 are supported)
+            prompt = PROMPTS.get(lang or "", None)
+            r = mlx_whisper.transcribe(f.name, path_or_hf_repo=WHISPER, language=lang, task="transcribe", initial_prompt=prompt)
+    return {"text": r.get("text", ""), "language": r.get("language", lang)}

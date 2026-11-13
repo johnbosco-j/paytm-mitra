@@ -142,7 +142,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <p className="text-[11px] text-faint">{store.role === "owner" ? "Owner" : "Staff"} · {me.user.name}</p>
             </div>
             <Link href="/app/ask" className="hidden flex-1 items-center gap-2 rounded-full border border-line bg-[#f5f8fc] px-4 py-2.5 text-sm text-faint hover:border-signal md:flex">
-              <Search className="size-4" /> Ask MITRA about your shop, in Tamil or English…
+              <Search className="size-4" /> Ask MITRA about your shop, in your language…
             </Link>
             <button aria-label="Switch language" onClick={() => setLang(lang === "en" ? "ta" : "en")} className="rounded-full px-2.5 py-1.5 text-xs font-bold text-navy hover:bg-[#f3f7fb] md:hidden">{t.language}</button>
             <Link href="/app/activity" aria-label="Activity" className="relative grid size-9 place-items-center rounded-full text-navy hover:bg-[#f3f7fb]">

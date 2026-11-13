@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { LanguagePicker } from "@/components/language-picker";
 import { Logo } from "@/components/logo";
 import { useApp } from "@/components/providers";
 import { Button, Field, Input, Select } from "@/components/ui";
@@ -13,7 +14,7 @@ export default function Onboarding() {
   const [name, setName] = useState("");
   const [city, setCity] = useState("Chennai");
   const [category, setCategory] = useState("kirana");
-  const [language, setLanguage] = useState<"ta" | "en">("ta");
+  const [language, setLanguage] = useState("ta");
   const [budget, setBudget] = useState("2000");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -27,7 +28,7 @@ export default function Onboarding() {
         body: { name, city, category, language, trial_budget: budget ? budget : null },
       });
       selectStore(s.id);
-      setLang(language);
+      setLang(language.startsWith("ta") ? "ta" : "en"); // app labels: Tamil or English; MITRA still hears every language
       await refreshMe();
       router.replace("/app/catalog?first=1");
     } catch (err) {
@@ -63,11 +64,8 @@ export default function Onboarding() {
             </Select>
           </Field>
         </div>
-        <Field label="Main language">
-          <Select value={language} onChange={(e) => setLanguage(e.target.value as "ta" | "en")}>
-            <option value="ta">தமிழ் (Tamil)</option>
-            <option value="en">English</option>
-          </Select>
+        <Field label="Main language" hint="Your customers can be heard in any of India's 22 scheduled languages.">
+          <LanguagePicker value={language} onChange={setLanguage} />
         </Field>
         <Field label="Max money for one stocking trial (₹)" hint="MITRA will never suggest a trial that costs more than this.">
           <Input type="number" min={0} step="1" inputMode="numeric" value={budget} onChange={(e) => setBudget(e.target.value)} />

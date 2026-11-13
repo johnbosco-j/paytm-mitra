@@ -16,14 +16,14 @@ type Chapter = { kicker: string; title: string; body: string; chips?: string[] }
 const CHAPTERS: Chapter[] = [
   { kicker: "6:40 pm · Velachery, Chennai", title: "Murugan has opened this shutter every morning for 22 years", body: "He knows every family on the street by name. The QR on his counter takes every payment. It just can't hear his customers.", chips: ["Kirana", "Tamil-speaking owner"] },
   { kicker: "The ask", title: "“Anna, mango lassi irukka?”", body: "Priya stops on her way home from work. It's hot, and she wants a chilled mango lassi. She is the third person to ask today." },
-  { kicker: "The answer", title: "“Illa-mma…”", body: "He says it kindly, the way he has said it a hundred times. She smiles, and walks two streets further to a supermarket. The sale didn't fail. It never existed.", chips: ["Lost sale", "Lost customer?"] },
+  { kicker: "The answer", title: "“Illa-mma…”", body: "He says it kindly, the way he has said it a hundred times. She smiles, and walks down the road to City Café & Mart. The sale didn't fail. It just went somewhere else, and nobody wrote it down.", chips: ["Lost sale", "Lost customer?"] },
   { kicker: "The blind spot", title: "The QR never sees it", body: "No payment means no record. Every payments dashboard, even the AI ones, sees only what sold, never what was asked for and missed.", chips: ["₹0 recorded", "0 signals"] },
   { kicker: "A week later", title: "24 asks. Zero data.", body: "It happened 24 times in 7 days. Murugan remembers maybe three. Nobody wrote it down." },
-  { kicker: "MITRA listens", title: "One tap. Speak Tamil, Tanglish or English.", body: "“Innaiku ettu per mango lassi ketanga.” MITRA turns it into a confirmed record: item, how many asked, why it wasn't sold. It even works offline on our own model, MITRA-Lite.", chips: ["Voice", "Offline-capable", "Merchant confirms"] },
+  { kicker: "MITRA listens", title: "One tap. Speak any of India's 22 languages.", body: "“Innaiku ettu per mango lassi ketanga.” Or Hindi, Bengali, Telugu, Marathi, Odia… or a mix. MITRA turns it into a confirmed record: item, how many asked, why it wasn't sold. Tamil and English even work fully offline on our own model, MITRA-Lite.", chips: ["22 languages + code-mix", "Offline-capable", "Merchant confirms"] },
   { kicker: "MITRA evaluates", title: "Maths, not guesses", body: "24 asks aren't 24 sales. With cost ₹22 and price ₹35, MITRA suggests a cautious 16-bottle trial: ₹352 outlay, ₹104–₹208 gross profit if 8–16 sell. No cost price, no profit promise.", chips: ["Deterministic ₹ maths", "Risk shown"] },
   { kicker: "Murugan decides", title: "Owner approves. MITRA never acts alone.", body: "Staff can propose, only the owner can spend. MITRA drafts the supplier WhatsApp in Tamil, and Murugan presses send.", chips: ["Owner-only", "Audit trail"] },
-  { kicker: "Next morning", title: "The stock arrives", body: "And the customers who asked can pre-order and pay in advance with a Paytm payment link, so the missed sale becomes a confirmed one.", chips: ["Pre-order", "Paytm payment link"] },
-  { kicker: "MITRA proves it", title: "14 of 16 sold. +₹182 gross profit.", body: "Revenue ₹490, cost of goods ₹308, 2 bottles left (₹44). Predicted vs actual, recorded, so the next decision is smarter.", chips: ["Predicted vs actual"] },
+  { kicker: "Next morning", title: "Sri Lakshmi Dairy's truck pulls up", body: "Sixteen bottles, exactly what the trial said. And the customers who asked can pre-order and pay in advance with a Paytm payment link, so the missed sale becomes a confirmed one.", chips: ["Pre-order", "Paytm payment link"] },
+  { kicker: "MITRA proves it", title: "Priya comes back. 14 of 16 sold.", body: "+₹182 gross profit: revenue ₹490, cost of goods ₹308, 2 bottles left (₹44). Predicted vs actual, recorded, so the next decision is smarter, and the customer who heard “illa” now hears “ready”.", chips: ["Predicted vs actual", "Customer won back"] },
 ];
 
 function Header() {
@@ -83,6 +83,11 @@ export function StoryPage() {
   const [shot, setShot] = useState<number | null>(null);
   const [clean, setClean] = useState(false);
   const { me } = useApp();
+  // Apple system typography for the whole story, including 3D overlays portalled outside <main>.
+  useEffect(() => {
+    document.body.classList.add("apple-type");
+    return () => document.body.classList.remove("apple-type");
+  }, []);
   // `?shot=N` pins chapter N with a snapped camera: used for screenshots, the pitch video and the deck.
   useEffect(() => {
     const v = new URLSearchParams(window.location.search).get("shot");
@@ -174,7 +179,7 @@ export function StoryPage() {
           <h2 data-reveal className="mt-2 max-w-2xl text-4xl font-black tracking-tight text-[#002e6e]">From a missed ask to a measured profit, in four steps</h2>
           <div className="mt-12 grid gap-5 md:grid-cols-4">
             {[
-              { i: Ear, k: "Listen", d: "Voice or text in Tamil, Tanglish or English. The merchant confirms every record. Nothing is guessed." },
+              { i: Ear, k: "Listen", d: "Voice or text in any of India's 22 scheduled languages, English or a code-mix. The merchant confirms every record. Nothing is guessed." },
               { i: Calculator, k: "Evaluate", d: "Confirmed demand + real cost and price → a ranked, explained trial size with outlay, margin and leftover risk." },
               { i: BadgeCheck, k: "Approve", d: "Owner-only approval, drafted supplier message and optional Paytm pre-order links. Never auto-sends." },
               { i: LineChart, k: "Prove", d: "Record what sold. Revenue, gross profit, cash vs outlay and leftover, predicted vs actual." },

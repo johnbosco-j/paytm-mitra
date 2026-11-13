@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { LanguagePicker } from "@/components/language-picker";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CheckCircle2, CircleSlash, Cloud, Link2, LogOut, Plus, QrCode, ShieldCheck, WifiOff } from "lucide-react";
@@ -85,8 +86,11 @@ export default function TeamPage() {
       <div id="settings" className="grid gap-5 lg:grid-cols-2">
         <Card>
           <h2 className="mb-1 text-[16px] font-bold text-navy">{s.name}</h2>
-          <p className="mb-4 text-sm text-muted">{s.city} · language {s.language} · you are <Badge>{s.role}</Badge></p>
+          <p className="mb-4 text-sm text-muted">{s.city} · you are <Badge>{s.role}</Badge></p>
           <div className="space-y-4">
+            <Field label="Shop language" hint="MITRA listens for this first, but understands all 22 scheduled languages of India, English and code-mix.">
+              <LanguagePicker value={s.language} disabled={!owner} onChange={(code) => patch({ language: code }, "Shop language saved")} />
+            </Field>
             <div className="flex items-end gap-2">
               <Field label="Max money per trial (₹)" hint="MITRA never suggests a trial above this.">
                 <Input type="number" min={0} disabled={!owner} value={edit.trial_budget ?? s.trial_budget ?? ""} onChange={(e) => setEdit({ ...edit, trial_budget: e.target.value })} placeholder="no limit" />
@@ -125,7 +129,7 @@ export default function TeamPage() {
           {i ? (
             <ul className="divide-y divide-line">
               <Status ok={i.offline_model.available} label="MITRA-Lite (offline model)" detail={i.offline_model.available ? `Running on this device${i.offline_model.model ? ` · ${i.offline_model.model}` : ""}${i.offline_model.speech ? " · speech" : " · text only"}` : "Start it with scripts/dev-ml.sh to work without internet."} />
-              <Status ok={i.cloud_ai} label="Cloud AI (Gemini)" detail={i.cloud_ai ? "Tamil voice + extraction, with automatic failover" : "No key configured"} />
+              <Status ok={i.cloud_ai} label="Cloud AI (Gemini)" detail={i.cloud_ai ? "Voice + extraction in all 22 Indian languages, with automatic failover" : "No key configured"} />
               <Status ok={i.paytm_links.connected} label="Paytm Payment Links" detail={i.paytm_links.connected ? "Staging credentials found" : "Add PAYTM staging MID and key in services/api/.env (owner's machine only)"} />
               <Status ok={i.upi_qr.configured} label="UPI QR for pre-orders" detail={i.upi_qr.configured ? "Customers can scan to pay" : "Add your shop UPI ID"} />
             </ul>

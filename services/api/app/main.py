@@ -17,13 +17,13 @@ from fastapi import Depends, FastAPI, File, Form, Header, Request, Response, Upl
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, StringConstraints, field_validator
+from pydantic import AfterValidator, BaseModel, Field, StringConstraints, field_validator
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from . import ai, paytm
+from . import ai, langs, paytm
 from . import economics as econ
 from .config import get_settings
 from .db import Base, engine, get_db
@@ -60,6 +60,17 @@ EmailStr = Annotated[
 ]
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
+
+
+def _lang(code: str) -> str:
+    found = langs.get(code)
+    if not found:
+        raise ValueError("Unsupported language. Use one of India's 22 scheduled languages, English or a code-mix like ta-Latn.")
+    return found.code
+
+
+LangCode = Annotated[str, AfterValidator(_lang)]
+
 log = logging.getLogger("mitra.api")
 
 
@@ -356,14 +367,14 @@ class StoreIn(BaseModel):
     name: str = Field(min_length=2, max_length=120)
     city: str = Field(default="", max_length=80)
     category: str = Field(default="kirana", max_length=40)
-    language: Literal["ta", "en", "hi"] = "ta"
+    language: LangCode = "ta"
     trial_budget: Decimal | None = Field(default=None, ge=0, max_digits=12, decimal_places=2)
 
 
 class StorePatch(BaseModel):
     name: str | None = Field(default=None, min_length=2, max_length=120)
     city: str | None = Field(default=None, max_length=80)
-    language: Literal["ta", "en", "hi"] | None = None
+    language: LangCode | None = None
     trial_budget: Decimal | None = Field(default=None, ge=0, max_digits=12, decimal_places=2)
     upi_vpa: Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^[a-zA-Z0-9._-]{2,64}@[a-zA-Z]{2,32}$")] | None = (
         None
@@ -610,6 +621,7 @@ ALLOWED_AUDIO = {"audio/wav", "audio/x-wav", "audio/webm", "audio/ogg", "audio/m
 async def extract_demand(
     text: str | None = Form(None),
     audio: UploadFile | None = File(None),
+    language: str | None = Form(None, max_length=16),
     ctx: StoreContext = Depends(store_context),
     db: Session = Depends(get_db),
 ):
@@ -636,7 +648,7 @@ async def extract_demand(
             audio=blob,
             audio_mime=mime,
             catalog_names=[p.name for p in products],
-            language_hint=ctx.store.language,
+            language_hint=(langs.get(language) or langs.get(ctx.store.language) or langs.REGISTRY["ta"]).code,
         )
     except ai.ProviderUnavailable as e:
         raise api_error(503, "PROVIDER_UNAVAILABLE", str(e)) from e
@@ -812,7 +824,13 @@ def opportunity_scenarios(item: str, qty: int, ctx: StoreContext = Depends(store
 
 class ExplainIn(BaseModel):
     item: str = Field(min_length=1, max_length=120)
-    language: Literal["en", "ta"] = "en"
+    language: LangCode = "en"
+
+
+@app.get("/api/languages")
+def list_languages():
+    """The 22 scheduled languages + English + code-mixes, with what works in the cloud and fully offline."""
+    return {"languages": [lang.support() for lang in langs.LANGUAGES], "scheduled": 22}
 
 
 @app.post("/api/opportunities/explain")
@@ -824,6 +842,7 @@ def explain_opportunity(body: ExplainIn, ctx: StoreContext = Depends(store_conte
         "இந்த பொருளை சோதனையாக வாங்கலாமா? காரணங்களை எளிமையாக விளக்கு."
         if body.language == "ta"
         else "Should I try stocking this item? Explain the evidence, money and risk simply."
+        + ("" if body.language == "en" else f" Reply in {langs.describe(body.language)}.")
     )
     data = {
         k: opp[k] for k in ("display_name", "status", "blockers", "evidence", "product", "margin_pct", "proposal", "scenarios")
@@ -1051,7 +1070,7 @@ def record_outcome(
 
 
 class SupplierMsgIn(BaseModel):
-    language: Literal["ta", "en", "hi"] = "ta"
+    language: LangCode = "ta"
 
 
 @app.post("/api/trials/{trial_id}/supplier-message")

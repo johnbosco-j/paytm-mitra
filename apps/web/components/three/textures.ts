@@ -243,6 +243,20 @@ export const wallAd = (title: string, color: string) =>
   });
 
 
+/** Clean modern store fascia (illuminated letters on dark glass). */
+export const storeSign = (title: string, sub: string) =>
+  make(`sign-${title}`, 1024, 192, (g) => {
+    g.fillStyle = "#14161c";
+    g.fillRect(0, 0, 1024, 192);
+    g.fillStyle = "#f5f1e8";
+    g.font = "700 92px -apple-system, 'SF Pro Display', 'Helvetica Neue', Arial";
+    g.textAlign = "center";
+    g.fillText(title, 512, 112);
+    g.fillStyle = "#c9a96e";
+    g.font = "500 34px -apple-system, 'SF Pro Text', 'Helvetica Neue', Arial";
+    g.fillText(sub, 512, 165);
+  });
+
 /** Alpha-cut cluster of small neem-like leaves (for instanced leaf cards). */
 export const leafCard = () =>
   make("leaf", 256, 256, (g, r) => {

@@ -5,7 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { useStory } from "@/lib/story";
-import { asphalt, concrete, leafCard, plaster, wallAd } from "./textures";
+import { asphalt, concrete, leafCard, plaster, storeSign, wallAd } from "./textures";
 
 const PASTELS = ["#e8b4b8", "#a7c7e7", "#f3d28b", "#b8d8be", "#d9c3e8", "#f2b880", "#cfd8dc"];
 
@@ -355,6 +355,35 @@ function ParkedScooter({ position, color }: { position: [number, number, number]
   );
 }
 
+/** The big modern café-store down the road (team asset, cut down in assets/blender/build_cafe.py).
+ * It's where Priya buys her drink after "illa": the sale Murugan never sees. */
+function BigStore() {
+  const { scene } = useGLTF("/models/cafe.glb", "/draco/");
+  const model = useMemo(() => {
+    const c = scene.clone(true);
+    c.traverse((o) => {
+      const m = o as THREE.Mesh;
+      if (m.isMesh) {
+        m.castShadow = true;
+        m.receiveShadow = true;
+      }
+    });
+    return c;
+  }, [scene]);
+  const sign = useMemo(() => storeSign("CITY CAFÉ & MART", "COFFEE · LASSI · GROCERIES"), []);
+  return (
+    <group position={[-27.5, 0.08, 0]}>
+      <primitive object={model} />
+      <mesh position={[0, 5.0, 0.06]}>
+        <planeGeometry args={[6.2, 1.16]} />
+        <meshStandardMaterial map={sign} emissive="#ffffff" emissiveMap={sign} emissiveIntensity={0.55} roughness={0.4} />
+      </mesh>
+      <pointLight position={[0, 2.2, -3]} color="#ffe2b8" intensity={6} distance={9} />
+    </group>
+  );
+}
+useGLTF.preload("/models/cafe.glb", "/draco/");
+
 export function Street() {
   const adA = useMemo(() => wallAd("மாபெரும் தள்ளுபடி", "#1d4e89"), []);
   const adB = useMemo(() => wallAd("டீ · காபி", "#8c1c13"), []);
@@ -362,7 +391,7 @@ export function Street() {
     () => [
       { x: -17, w: 8, h: 10.5, c: PASTELS[0] }, { x: -9.2, w: 7, h: 7.5, c: PASTELS[1] },
       { x: 9.2, w: 7, h: 9, c: PASTELS[2] }, { x: 17, w: 8, h: 12, c: PASTELS[3] },
-      { x: -26, w: 9, h: 8, c: PASTELS[4] }, { x: 26, w: 9, h: 7, c: PASTELS[5] },
+      { x: 26, w: 9, h: 7, c: PASTELS[5] },
     ],
     [],
   );
@@ -392,6 +421,7 @@ export function Street() {
       {[-14, -2.8, 6, 20].map((x) => (
         <StreetLamp key={x} x={x} />
       ))}
+      <BigStore />
       <PowerLines />
       <NeemTree position={[-5.2, 0.16, 1.4]} s={1.05} />
       <NeemTree position={[13.5, 0.16, 1.5]} s={0.9} />

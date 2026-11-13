@@ -114,7 +114,7 @@ async function icon(name, color = C.blue, size = 256) {
     kicker(s, "02 · PROPOSED SOLUTION");
     title(s, "MITRA: the LEAP loop for every kirana");
     const steps = [
-      ["LuMic", "Listen", "Tap and speak Tamil, Tanglish or English. AI turns it into a record the owner confirms.", C.blue],
+      ["LuMic", "Listen", "Tap and speak any of India's 22 languages or a code-mix. AI turns it into a record the owner confirms.", C.blue],
       ["LuCalculator", "Evaluate", "Confirmed asks + real cost and price → a cautious, explained trial. No cost, no profit claim.", C.blue],
       ["LuShieldCheck", "Approve", "Owner-only spending. Tamil supplier draft. Paytm pre-order links. Never auto-sends.", C.amber],
       ["LuChartLine", "Prove", "Revenue, gross profit, cash vs outlay, leftover: predicted vs actual, every time.", C.teal],
@@ -215,12 +215,12 @@ async function icon(name, color = C.blue, size = 256) {
       txt(s, head, o, { x: x + 0.15, y: y + 0.1, w: w - 0.3, h: 0.3, fontSize: 13, bold: true, color: col, fx: "zoom" });
       txt(s, lines.map((l, j) => ({ text: l, options: { bullet: { indent: 10 }, breakLine: j < lines.length - 1 } })), o, { x: x + 0.15, y: y + 0.42, w: w - 0.3, h: h - 0.5, fontSize: 10.5, color: C.mist, valign: "top", paraSpaceAfter: 2, fx: "zoom" });
     };
-    box(0.55, 1.6, 2.7, 1.55, "Merchant app", ["Next.js 16 · React 19 · Tailwind 4", "Paytm-style UI · Tamil / English", "3D story: R3F + GSAP + Lenis + voice", "Blender-built rickshaw + human models"], C.blue, 2);
+    box(0.55, 1.6, 2.7, 1.55, "Merchant app", ["Next.js 16 · React 19 · Tailwind 4", "Paytm-style UI · Tamil / English", "3D story: R3F + GSAP + Lenis + voice", "Blender pipeline: people, truck, café"], C.blue, 2);
     box(3.65, 1.6, 2.7, 1.55, "API & data", ["FastAPI · Pydantic v2 · SQLAlchemy 2", "Alembic migrations · PostgreSQL 17 verified", "Decimal economics engine", "Trial + pre-order state machines"], C.blue, 3);
-    box(6.75, 1.6, 2.7, 1.55, "AI layer", ["Gemini: Tamil speech, vision, voice replies", "MITRA-Lite + Whisper turbo: fully offline", "Rule fallback · hallucination guards", "Grounded answers only"], C.teal, 4);
+    box(6.75, 1.6, 2.7, 1.55, "AI layer", ["Gemini: speech in 22 Indian languages, vision", "MITRA-Lite + Whisper turbo: fully offline", "Rule fallback · hallucination guards", "Grounded answers only"], C.teal, 4);
     box(0.55, 3.4, 4.25, 1.4, "Paytm & payments", ["Paytm Payment Links (staging, official checksum lib)", "UPI QR pre-orders · feature-flagged connectors", "Soundbox voice channel: roadmap with Paytm"], C.amber, 5);
     box(5.2, 3.4, 4.25, 1.4, "Security", ["httpOnly JWT, bcrypt, lockout, rate limits", "Origin guard, security headers, session revoke", "Encrypted customer phones · owner-only reveal · audit log"], C.coral, 6);
-    txt(s, "33 backend tests on SQLite + PostgreSQL · strict TypeScript · lint clean · MCP server for AI agents", 7, { x: 0.55, y: 4.95, w: 9, h: 0.22, fontSize: 10, bold: true, color: C.teal, fx: "fade" });
+    txt(s, "38 backend tests on SQLite + PostgreSQL · strict TypeScript · lint clean · MCP server for AI agents", 7, { x: 0.55, y: 4.95, w: 9, h: 0.22, fontSize: 10, bold: true, color: C.teal, fx: "fade" });
     s.addNotes("Modular monolith on purpose. Every rupee is computed by tested code; the model only reads language.");
   }
 
@@ -288,7 +288,7 @@ async function icon(name, color = C.blue, size = 256) {
     kicker(s, "05 · IMPACT & BENEFITS");
     title(s, "Good for merchants, Paytm and the street");
     const cols = [
-      ["LuStore", "Merchant", C.blue, ["Sell what customers already ask for", "Smaller first buys protect cash", "Honest profit: waste & leftover shown", "Tamil voice, 5 seconds, works offline"]],
+      ["LuStore", "Merchant", C.blue, ["Sell what customers already ask for", "Smaller first buys protect cash", "Honest profit: waste & leftover shown", "Voice in 22 Indian languages, 5 seconds"]],
       ["LuWallet", "Paytm", C.teal, ["Daily reason to open the merchant app", "A consented demand signal no rail has", "Pre-orders paid via Paytm links", "Trial outcomes → partner credit evidence"]],
       ["LuTruck", "Ecosystem", C.amber, ["Distributors see real local demand", "Customers find what they asked for", "Less perishable waste"]],
     ];

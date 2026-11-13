@@ -6,13 +6,13 @@ Paytm Build for India AI Hackathon, Chennai, 15 Nov 2026 · **Track 1: Merchant 
 
 > Hackathon prototype. Not an official Paytm product, partnership or integration. No Paytm data is accessed.
 
-When a customer asks *"mango lassi irukka?"* and the shop says *"illa"*, no payment happens, so no system records the lost sale. MITRA captures those missed requests by voice (Tamil, Tanglish or English). It turns them into small, owner-approved, profit-checked stocking trials and measures what actually sold. The engine is the team's **LEAP loop**: **L**isten → **E**valuate → **A**pprove → **P**rove.
+When a customer asks *"mango lassi irukka?"* and the shop says *"illa"*, no payment happens, so no system records the lost sale. MITRA captures those missed requests by voice or text in **any of India's 22 scheduled languages**, English, or code-mix (Tanglish, Hinglish, Tenglish, Manglish, Kanglish). It turns them into small, owner-approved, profit-checked stocking trials and measures what actually sold. The engine is the team's **LEAP loop**: **L**isten → **E**valuate → **A**pprove → **P**rove.
 
 ## What's in the box
 
 | Piece | What it is |
 |---|---|
-| **3D story launch page** (`/`) | Scroll-driven React Three Fiber scene of a Chennai street at dusk: Murugan Stores, a customer, “illa”, the blind QR, asks piling up, MITRA listening in Tamil, holographic trial maths, owner approval, an auto-rickshaw delivery and the proven profit. The shopkeeper, customer and passer-by are realistic people built in Blender from the CC0 *Human Base Meshes* (posed, clothed in a veshti and sari, Draco-compressed: `assets/blender/build_people.py`); the rickshaw is modelled in `build_auto_rickshaw.py`. Optional sound: a synthesised street ambience plus Tamil/English voice lines per chapter. GSAP ScrollTrigger + Lenis. `?shot=N&clean=1` pins a chapter for captures. |
+| **3D story launch page** (`/`) | Scroll-driven React Three Fiber scene of a Chennai street at dusk: Murugan Stores, a customer, “illa”, the blind QR, asks piling up, MITRA listening in Tamil, holographic trial maths, owner approval, an auto-rickshaw delivery and the proven profit. Murugan, Priya (the customer) and passers-by are the team's Character Creator models in their own western clothes, posed with their own skeletons (palms down on the counter, an asking gesture) in `assets/blender/build_people_v2.py`; Priya walks up, walks away to the big café down the road after "illa", and comes back for her pre-order. The supplier's mini-truck (team asset, rebranded "Sri Lakshmi Dairy") drives in for the delivery (`build_truck.py`); the downloaded coffee-bar asset becomes "City Café & Mart", the bigger store that gets the lost sale (`build_cafe.py`). Apple system typography (SF Pro). Optional sound: street ambience plus Tamil/English voice lines. GSAP ScrollTrigger + Lenis. `?shot=N&clean=1` pins a chapter for captures. |
 | **Merchant app** (`/app`) | Paytm-for-Business-style UI (navy + Paytm blue, icon tiles, raised centre **Speak** button on mobile): Today (time-of-day Tamil/English greeting), Missed demand, Opportunities, Trials, **Pre-orders**, **Insights**, **Sales**, **Shelf scanner**, Catalog, Ask MITRA (with spoken answers), Activity, Store & settings. Confetti when a trial sells through or a pre-order is paid. Installable PWA. Google Sans / SF Pro typography. |
 | **Pre-orders** | Turn a missed ask into a reserved sale: Paytm Payment Link (staging, official `paytmchecksum` signing, enabled when you add your MID/key), UPI QR from the shop's UPI ID, or pay later. Customer phone encrypted (Fernet), masked in lists, owner-only audited reveal, consent required. |
 | **Insights** | From sales (typed on a keypad or imported from a Paytm statement CSV, deduped, payer UPI IDs salted-hashed): a 7-day sales forecast backtested against a naive baseline, a 30-day cash runway from 2,000 Monte Carlo runs over margin and dues, repeat customers drifting away, upcoming festivals, and an explained business-health score (not a credit score). `services/api/app/insights.py`, `growth.py`. |
@@ -25,7 +25,7 @@ When a customer asks *"mango lassi irukka?"* and the shop says *"illa"*, no paym
 
 | Step | What happens | Where |
 |---|---|---|
-| Listen | Mic → 16 kHz WAV in the browser → Gemini transcribes Tamil/Tanglish and extracts `item, ask count, reason` as schema-bound JSON → merchant reviews/edits → saved. Typed text and a no-AI form also work. | `apps/web/app/app/demand`, `services/api/app/ai.py` |
+| Listen | Mic → 16 kHz WAV in the browser → Gemini transcribes any of the 22 scheduled languages (or code-mix) and extracts `item, ask count, reason` as schema-bound JSON → merchant reviews/edits → saved. A "Speaking in" picker sets the hint; the detected language is shown and stored. Typed text and a no-AI form also work. | `apps/web/app/app/demand`, `services/api/app/ai.py`, `langs.py` |
 | Evaluate | Confirmed asks (7-day window) + catalog cost/price → explained score (`score-v1`) and trial size (24 asks → **16 units**, capped by shelf life, stock and budget). No cost price means no profit shown. | `services/api/app/opportunities.py`, `economics.py` |
 | Approve | Owner-only approval (staff gets **HTTP 403**). AI drafts a Tamil supplier WhatsApp; MITRA **never sends** it. | `POST /api/trials/{id}/approve`, `/supplier-message` |
 | Prove | Record stock received and units sold/wasted → revenue, COGS, gross profit, cash vs outlay, leftover value, predicted vs actual. Stock ledger updated. | `POST /api/trials/{id}/receive`, `/outcome` |
@@ -33,6 +33,18 @@ When a customer asks *"mango lassi irukka?"* and the shop says *"illa"*, no paym
 | Trust | httpOnly JWT + bcrypt, store-scoped roles, tenant isolation, append-only audit log, idempotency keys, correlation IDs, login lockout + rate limits, origin guard, security headers, "sign out everywhere", encrypted PII, Alembic-managed schema. | `services/api/app/security.py`, `hardening.py`, `crypto.py`, `migrations/` |
 
 Golden finance case (blueprint docs/04 §5), enforced by tests and visible in the UI: 16 bought at ₹22, 14 sold at ₹35 gives revenue ₹490, COGS ₹308, **gross profit ₹182**, cash vs outlay ₹138 (not profit), leftover ₹44.
+
+## Languages
+
+All 22 languages of the Eighth Schedule (Assamese, Bengali, Bodo, Dogri, Gujarati, Hindi, Kannada, Kashmiri, Konkani, Maithili, Malayalam, Manipuri, Marathi, Nepali, Odia, Punjabi, Sanskrit, Santali, Sindhi, Tamil, Telugu, Urdu), English and five code-mixes. The registry and script-based detector are adapted from the team's Nijam.AI project (`services/api/app/langs.py`, `GET /api/languages`). What works where, honestly:
+
+| | Cloud (Gemini) | Offline speech (Whisper turbo) | Offline extraction (MITRA-Lite) |
+|---|---|---|---|
+| Tamil, English, Tanglish | ✓ | ✓ | ✓ (trained) |
+| Hindi, Bengali, Telugu, Kannada, Malayalam, Marathi, Gujarati, Punjabi, Assamese, Urdu, Nepali, Sanskrit, Sindhi | ✓ | ✓ | flagged: "check every item" |
+| Bodo, Dogri, Kashmiri, Konkani, Maithili, Manipuri, Odia, Santali | ✓ | ✗ (Whisper lacks them; typed notes work offline) | flagged |
+
+App labels are Tamil and English; MITRA listens in all of the above.
 
 ## Run it locally
 
@@ -80,7 +92,7 @@ cd services/api && MITRA_TEST_DATABASE_URL=postgresql+psycopg://mitra@127.0.0.1:
 cd apps/web && npx tsc --noEmit && npx eslint . && npx next build
 ```
 
-Current status: **33/33 backend tests pass on both SQLite and PostgreSQL 17**, Alembic migrations apply cleanly on both, ruff clean, TypeScript strict and ESLint clean.
+Current status: **38/38 backend tests pass on both SQLite and PostgreSQL 17**, Alembic migrations apply cleanly on both, ruff clean, TypeScript strict and ESLint clean.
 
 ## Layout
 
@@ -103,8 +115,10 @@ docs/01–17                    original LEAP blueprint (spec, architecture, ris
 
 - Postgres row-level security is not added yet (tenant isolation is enforced in the API layer and tested).
 - Offline voice needs the Whisper model downloaded into `services/ml/models/` (1.5 GB, not in git); the first offline voice note after a cold start takes ~50 s while models load, then a few seconds.
-- Paytm Payment Links: signing and requests follow Paytm's staging spec, but the staging MID currently answers "Merchant Id invalid", so links fall back to UPI QR / pay later until Paytm activates the MID. The Paytm MCP server repo was not publicly available.
+- Paytm Payment Links: signing and requests follow Paytm's staging spec, but Paytm's dashboard reports "We hit a snag creating your staging MID", so the MID is not active yet and the API answers "Merchant Id invalid". Pre-orders fall back to UPI QR / pay later until Paytm finishes creating it (Retry in the dashboard, or Paytm support). The Paytm MCP server repo was not publicly available.
 - Paytm statement import accepts common CSV column names; it has not been tested against every Paytm export format.
+- The people, truck and café GLBs are built from models the team downloaded (CGTrader-style free licences); check each licence allows redistribution before making the repo public. Raw sources stay out of git (`assets/blender/vendor/`).
+- People are static poses baked from their rigs; walking is a glide with a step bob, not skeletal animation.
 - Unity and Unreal were not used (they need account sign-in and 10–40 GB installs); all 3D is Blender → glTF → three.js.
 - Not yet built: offline PWA queue, Sarvam STT adapter, expiry radar.
 - The AI score and the 2/3 trial fraction are product heuristics, not measured models.
