@@ -14,11 +14,11 @@
 | 2:15 | "Staff can propose, but can't spend the owner's money." | Owner: **Propose 16-unit trial**. Switch to the **staff** window → **Trials** → Approve → toast shows `403 OWNER_APPROVAL_REQUIRED`. |
 | 2:40 | "The owner approves. MITRA drafts the supplier message in Tamil, and he sends it himself." | Owner window → **Approve** → **Draft in Tamil** → show **Open in WhatsApp** (don't send). |
 | 3:00 | "A week later he records what happened." | **Record stock received** (16 @ ₹22) → Sold **14**, wasted 0 → **Record results**. |
-| 3:15 | "₹182 gross profit. ₹138 cash vs outlay, with 2 bottles still worth ₹44. Predicted 12, actually 14. Every trial teaches the next one." | Point at the result card and Predicted vs actual. |
+| 3:15 | "₹182 gross profit. ₹138 cash vs outlay, with 2 bottles still worth ₹44. Predicted 12, actually 14. Every trial teaches the next one." | Confetti fires (14 of 16 sold). Point at the result card and Predicted vs actual. |
 | 3:30 | "Next time someone asks for rose milk, he doesn't say illa. He takes a pre-order." | **Pre-orders** → item Rose Milk, qty 2, name, phone (tick consent), **UPI QR** → the QR appears; the phone shows masked. |
-| 3:45 | "And it works without internet, on our own model." | **Store & settings → AI mode → Offline only** → type a note on Missed demand → badge reads `mitra-lite`. |
-| 3:55 | "And he can ask in Tamil." | **Ask MITRA** → tap *"இந்த வாரம் அதிகம் கேட்கப்பட்டது எது?"* |
-| 3:50 | "The Soundbox tells you what sold. MITRA tells you what you missed. Plugged into Paytm's merchant app and Soundbox, every merchant gets it." | Close slide. |
+| 3:40 | "Add what *did* sell, and MITRA plans ahead: next week's sales, a 27% chance cash runs short around 5 December, and three regulars who stopped coming." | **Insights**: point at the forecast's backtest badge, the cash-runway band, then the at-risk regulars. |
+| 3:50 | "And it works without internet, on our own model and offline Whisper." | **Store & settings → AI mode → Offline only** → type a note on Missed demand → badge reads `mitra-lite`. (Pre-warm `scripts/dev-ml.sh` before going on stage: the first call loads the model.) |
+| 3:58 | "The Soundbox tells you what sold. MITRA tells you what you missed." | Close slide. |
 
 Before the demo: set the shop UPI ID in Settings to **your own** UPI ID (never a placeholder), start `scripts/dev-ml.sh` for offline mode, and re-run the seed.
 

@@ -11,6 +11,9 @@ const lu = require("react-icons/lu");
 const OUT = process.argv[2] || "pitch/Paytm_MITRA_Pitch.pptx";
 const A = (f) => path.join(__dirname, "assets", f);
 const C = { navy: "002E6E", ink: "020B1F", blue: "00BAF2", teal: "21C8A2", amber: "F5B75C", coral: "EF6E71", white: "FFFFFF", mist: "BFD3EA", card: "0B1D3D", line: "23406B" };
+const snap = (() => {
+  try { return JSON.parse(fs.readFileSync(path.join(__dirname, "assets", "insights_snapshot.json"), "utf8")); } catch { return null; }
+})();
 const metrics = (() => {
   try { return JSON.parse(fs.readFileSync(path.join(__dirname, "../services/ml/reports/summary.json"), "utf8")); } catch { return null; }
 })();
@@ -87,7 +90,7 @@ async function icon(name, color = C.blue, size = 256) {
   // 3 ── PROBLEM: the blind spot ─────────────────────────────────────────────
   {
     const s = pres.addSlide({ masterName: "DARK" });
-    bg(s, "story_04.jpg");
+    bg(s, "story_05.jpg");
     kicker(s, "01 · PROBLEM STATEMENT · THE BLIND SPOT");
     title(s, "Payment dashboards are blind to lost demand");
     ["Customer asks", "“Not available”", "No payment", "No signal"].forEach((t, i) => {
@@ -171,6 +174,36 @@ async function icon(name, color = C.blue, size = 256) {
     s.addNotes("Money maths is deterministic Decimal code with golden tests. ₹182 gross profit is shown separately from ₹138 cash difference.");
   }
 
+  // 6b ── BEYOND ONE TRIAL: the shop's growth OS (numbers from the live API snapshot) ─────────────
+  {
+    const s = pres.addSlide({ masterName: "DARK" });
+    s.background = { color: "041533" };
+    kicker(s, "02 · PROPOSED SOLUTION · GROWTH OS");
+    title(s, "What sold + what didn't = a shop that plans ahead", 1, 0.7, 9, 25);
+    s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.55, y: 1.45, w: 5.0, h: 3.2, rectRadius: 0.1, fill: { color: "E9EEF5" }, line: { color: "35517F", width: 0.75 }, objectName: nm("rise", 2) });
+    s.addImage({ path: A("desk_app_insights.jpg"), x: 0.61, y: 1.51, w: 4.88, h: 3.08, objectName: nm("rise", 2), altText: "MITRA insights: health, forecast, cash runway", sizing: { type: "cover", w: 4.88, h: 3.08 } });
+    const f = snap?.forecast, c = snap?.cashflow, cu = snap?.customers, h = snap?.health;
+    const when = c?.earliest_risk_date ? new Date(c.earliest_risk_date).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : null;
+    const tiles = [
+      ["LuTrendingUp", "7-day sales forecast", f?.backtest ? `${f.backtest.mape_model}% error vs ${f.backtest.mape_naive}% naive` : "Weekday profile, backtested", C.blue],
+      ["LuWallet", "Cash runway, 2,000 simulations", c?.status === "ok" ? `${Math.round(c.probability_shortfall * 100)}% chance of a shortfall${when ? `, around ${when}` : ""}` : "Monte Carlo on sales, margin and dues", C.amber],
+      ["LuUsers", "Regulars drifting away", cu?.counts ? `${cu.counts.regular} regulars · ${cu.counts.at_risk} at risk · ${cu.counts.lost} lost` : "From hashed UPI payers in Paytm statements", C.coral],
+      ["LuScanLine", "Shelf scanner + statement import", "Photo → empty-slot drafts · Paytm CSV → deduped sales", C.teal],
+    ];
+    for (let i = 0; i < tiles.length; i++) {
+      const [ic, k, v, col] = tiles[i];
+      const y = 1.45 + i * 0.82;
+      card(s, 5.8, y, 3.65, 0.72, 3 + i, C.card, col);
+      await iconDot(s, 5.92, y + 0.13, ic, col, 3 + i, 0.46);
+      txt(s, k, 3 + i, { x: 6.5, y: y + 0.07, w: 2.9, h: 0.28, fontSize: 12, bold: true, color: C.white });
+      txt(s, v, 3 + i, { x: 6.5, y: y + 0.35, w: 2.9, h: 0.3, fontSize: 10, color: col });
+    }
+    txt(s, h ? `Business health ${h.score}/100 (${h.band}): habits score for the owner, never a credit score.` : "Business health: a habits score for the owner, never a credit score.", 7,
+      { x: 0.55, y: 4.75, w: 9, h: 0.25, fontSize: 11, bold: true, color: C.teal, fx: "fade" });
+    txt(s, `Computed live by MITRA's tested code on ${snap?.store ?? "the demo store"}'s SAMPLE sales; not merchant traction.`, 8, { x: 0.55, y: 5.0, w: 9, h: 0.2, fontSize: 8, color: "7D93B5", fx: "fade" });
+    s.addNotes("Sales plus missed demand lets MITRA forecast the week, simulate cash 2,000 times and flag regulars who stopped coming. Every number is computed by code and shows its method.");
+  }
+
   // 7 ── TECH STACK: architecture ───────────────────────────────────────────
   {
     const s = pres.addSlide({ masterName: "DARK" });
@@ -182,12 +215,12 @@ async function icon(name, color = C.blue, size = 256) {
       txt(s, head, o, { x: x + 0.15, y: y + 0.1, w: w - 0.3, h: 0.3, fontSize: 13, bold: true, color: col, fx: "zoom" });
       txt(s, lines.map((l, j) => ({ text: l, options: { bullet: { indent: 10 }, breakLine: j < lines.length - 1 } })), o, { x: x + 0.15, y: y + 0.42, w: w - 0.3, h: h - 0.5, fontSize: 10.5, color: C.mist, valign: "top", paraSpaceAfter: 2, fx: "zoom" });
     };
-    box(0.55, 1.6, 2.7, 1.55, "Merchant app", ["Next.js 16 · React 19 · Tailwind 4", "Paytm-style UI · Tamil / English", "3D story: R3F + GSAP + Lenis", "Blender-modelled assets"], C.blue, 2);
-    box(3.65, 1.6, 2.7, 1.55, "API & data", ["FastAPI · Pydantic v2 · SQLAlchemy 2", "Alembic migrations · Postgres-ready", "Decimal economics engine", "Trial + pre-order state machines"], C.blue, 3);
-    box(6.75, 1.6, 2.7, 1.55, "AI layer", ["Gemini (cloud): Tamil speech + JSON", "MITRA-Lite: our fine-tuned model, offline", "Rule fallback · prompt-injection safe", "Grounded answers only"], C.teal, 4);
+    box(0.55, 1.6, 2.7, 1.55, "Merchant app", ["Next.js 16 · React 19 · Tailwind 4", "Paytm-style UI · Tamil / English", "3D story: R3F + GSAP + Lenis + voice", "Blender-built rickshaw + human models"], C.blue, 2);
+    box(3.65, 1.6, 2.7, 1.55, "API & data", ["FastAPI · Pydantic v2 · SQLAlchemy 2", "Alembic migrations · PostgreSQL 17 verified", "Decimal economics engine", "Trial + pre-order state machines"], C.blue, 3);
+    box(6.75, 1.6, 2.7, 1.55, "AI layer", ["Gemini: Tamil speech, vision, voice replies", "MITRA-Lite + Whisper turbo: fully offline", "Rule fallback · hallucination guards", "Grounded answers only"], C.teal, 4);
     box(0.55, 3.4, 4.25, 1.4, "Paytm & payments", ["Paytm Payment Links (staging, official checksum lib)", "UPI QR pre-orders · feature-flagged connectors", "Soundbox voice channel: roadmap with Paytm"], C.amber, 5);
     box(5.2, 3.4, 4.25, 1.4, "Security", ["httpOnly JWT, bcrypt, lockout, rate limits", "Origin guard, security headers, session revoke", "Encrypted customer phones · owner-only reveal · audit log"], C.coral, 6);
-    txt(s, "25 automated backend tests · strict TypeScript · lint clean · production build", 7, { x: 0.55, y: 4.95, w: 9, h: 0.22, fontSize: 10, bold: true, color: C.teal, fx: "fade" });
+    txt(s, "33 backend tests on SQLite + PostgreSQL · strict TypeScript · lint clean · MCP server for AI agents", 7, { x: 0.55, y: 4.95, w: 9, h: 0.22, fontSize: 10, bold: true, color: C.teal, fx: "fade" });
     s.addNotes("Modular monolith on purpose. Every rupee is computed by tested code; the model only reads language.");
   }
 

@@ -492,6 +492,19 @@ def guard_sizes(requests: list[dict], note: str, catalog_names: list[str]) -> li
     return requests
 
 
+def guard_items(requests: list[dict], note: str) -> list[dict]:
+    """Flag items whose words never appear in the note (model hallucination); the merchant must confirm or remove them."""
+    text = (note or "").lower()
+    for r in requests:
+        raw = (r.get("raw_item") or "").lower().strip()
+        words = [w for w in re.findall(r"[\w\u0B80-\u0BFF]+", raw) if len(w) > 2]
+        if words and not any(w[:4] in text for w in words):
+            r["uncertainties"] = [*r.get("uncertainties", []), "item not heard in the note"]
+            r["requires_review"] = True
+            r["suspect"] = True
+    return requests
+
+
 def extract_requests(
     text: str | None = None,
     audio: bytes | None = None,
@@ -503,7 +516,8 @@ def extract_requests(
     res = _extract_requests_raw(
         text=text, audio=audio, audio_mime=audio_mime, catalog_names=catalog_names, language_hint=language_hint, mode=mode
     )
-    res.requests = guard_sizes(res.requests, (text or "") + " " + (res.transcript or ""), catalog_names or [])
+    note = (text or "") + " " + (res.transcript or "")
+    res.requests = guard_items(guard_sizes(res.requests, note, catalog_names or []), note)
     return res
 
 

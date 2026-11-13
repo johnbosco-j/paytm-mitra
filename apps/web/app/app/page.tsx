@@ -1,13 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import {
   Activity,
   ArrowRight,
   ChevronRight,
   CircleDollarSign,
   FlaskConical,
+  HeartPulse,
+  IndianRupee,
   Keyboard,
+  ScanLine,
   Link2,
   MessageCircleQuestion,
   Mic,
@@ -36,16 +40,35 @@ const TILES = [
   { href: "/app/preorders", label: "Pre-orders", icon: ShoppingBag },
   { href: "/app/catalog", label: "Catalog", icon: Package },
   { href: "/app/ask", label: "Ask MITRA", icon: MessageCircleQuestion },
+  { href: "/app/insights", label: "Insights", icon: HeartPulse },
+  { href: "/app/sales", label: "Sales", icon: IndianRupee },
+  { href: "/app/shelf", label: "Shelf scan", icon: ScanLine },
   { href: "/app/preorders#paytm", label: "Paytm links", icon: Link2 },
   { href: "/app/activity", label: "Activity", icon: Activity },
   { href: "/app/team", label: "Team", icon: Users },
   { href: "/app/team#settings", label: "Settings", icon: Settings },
 ];
 
+/** Warm, time-aware greeting in the merchant's language (IST). */
+function dayGreeting(lang: string, hour: number) {
+  const en = hour < 12 ? ["Good morning", "Shutters up, the first customers are on their way."]
+    : hour < 16 ? ["Good afternoon", "Quiet hours are good for planning the next trial."]
+    : hour < 21 ? ["Good evening", "Peak time on the street. Every ask you hear counts."]
+    : ["Good night", "Closing up? Quick look at what customers asked for today."];
+  const ta = hour < 12 ? ["காலை வணக்கம்", "கடை திறந்தாச்சு, முதல் வாடிக்கையாளர் வருகிறார்."]
+    : hour < 16 ? ["மதிய வணக்கம்", "அமைதியான நேரம், அடுத்த சோதனையைத் திட்டமிடலாம்."]
+    : hour < 21 ? ["மாலை வணக்கம்", "கூட்டம் அதிகமான நேரம். ஒவ்வொரு கேள்வியும் முக்கியம்."]
+    : ["இரவு வணக்கம்", "கடை மூடுகிறீர்களா? இன்று என்ன கேட்டார்கள் என்று பாருங்கள்."];
+  return lang === "ta" ? ta : en;
+}
+
+const istHour = () => Number(new Intl.DateTimeFormat("en-IN", { hour: "numeric", hour12: false, timeZone: "Asia/Kolkata" }).format(new Date()));
+
 type Integrations = { offline_model: { available: boolean; model?: string }; cloud_ai: boolean; ai_mode: string; paytm_links: { connected: boolean }; upi_qr: { configured: boolean } };
 
 export default function Today() {
-  const { store, t, me } = useApp();
+  const { store, t, me, lang } = useApp();
+  const [hour] = useState(istHour);
   const { data, error, loading, reload } = useApiData<Dashboard>("/dashboard", store?.id);
   const integ = useApiData<Integrations>("/integrations", store?.id);
 
@@ -62,7 +85,8 @@ export default function Today() {
         <div className="pointer-events-none absolute -top-16 -right-10 size-56 rounded-full bg-[#00baf2]/25 blur-2xl" />
         <div className="relative flex flex-wrap items-end justify-between gap-6">
           <div>
-            <p className="text-sm text-[#bfe9fb]">{t.greeting}, {me?.user.name.split(" ")[0]} · {data.store.name}</p>
+            <p className="font-display text-xl font-bold md:text-2xl">{dayGreeting(lang, hour)[0]}, {me?.user.name.split(" ")[0]} <span className="inline-block origin-[70%_70%] animate-[wave_2.2s_ease-in-out_1]">👋</span></p>
+            <p className="mt-0.5 text-sm text-[#bfe9fb]">{dayGreeting(lang, hour)[1]} · {data.store.name}</p>
             <p className="mt-3 text-xs font-semibold tracking-wide text-[#9fe3fb] uppercase">Missed demand · last 7 days</p>
             <p className="num mt-1 text-4xl font-black tracking-tight md:text-5xl">{data.kpis.asks_7d}<span className="ml-2 text-lg font-semibold text-[#bfe9fb]">customer asks</span></p>
             <p className="mt-2 text-sm text-[#d6f1fd]">
@@ -101,7 +125,7 @@ export default function Today() {
           <h2 className="text-[16px] font-bold text-navy">MITRA for your shop</h2>
           <span className="text-xs font-semibold text-signal">Tamil · English</span>
         </div>
-        <div className="grid grid-cols-4 gap-x-2 gap-y-4 md:grid-cols-6 lg:grid-cols-12">
+        <div className="grid grid-cols-4 gap-x-2 gap-y-4 md:grid-cols-8 lg:grid-cols-15">
           {TILES.map(({ href, label, icon: Icon }) => (
             <Link key={label} href={href} className="group flex flex-col items-center gap-1.5 text-center">
               <span className="grid size-[52px] place-items-center rounded-2xl bg-[#e6f6fd] text-navy transition-transform group-hover:-translate-y-0.5 group-hover:bg-[#d4effb]">

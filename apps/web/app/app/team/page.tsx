@@ -9,6 +9,7 @@ import { Badge, Button, Card, ErrorNote, Field, Input, PageHeader, Spinner, cx }
 import { api, ApiError } from "@/lib/api";
 import { rupees } from "@/lib/format";
 import { useApiData } from "@/lib/useApiData";
+import { MoneySettings } from "@/components/money-settings";
 
 type Member = { id: string; name: string; email: string; role: string };
 type StoreInfo = { id: string; name: string; city: string; language: string; trial_budget: string | null; role: string; upi_vpa: string | null; ai_mode: "auto" | "offline" };
@@ -132,6 +133,8 @@ export default function TeamPage() {
           <p className="mt-2 flex items-center gap-1.5 text-[11px] text-faint"><ShieldCheck className="size-3.5" /> The prototype never reads Paytm account data. Links are created only when you take a pre-order.</p>
         </Card>
       </div>
+
+      <MoneySettings />
 
       {owner && (
         <Card>

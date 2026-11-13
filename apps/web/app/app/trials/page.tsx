@@ -193,7 +193,7 @@ function Receive({ t, onChange }: { t: Trial; onChange: () => void }) {
 }
 
 function Outcome({ t, onChange }: { t: Trial; onChange: () => void }) {
-  const { toast } = useApp();
+  const { toast, celebrate } = useApp();
   const [sold, setSold] = useState("");
   const [wasted, setWasted] = useState("0");
   const [price, setPrice] = useState(t.unit_price);
@@ -205,7 +205,9 @@ function Outcome({ t, onChange }: { t: Trial; onChange: () => void }) {
     setBusy(true);
     try {
       await api(`/trials/${t.id}/outcome`, { idempotencyKey: key.current, body: { sold_qty: Number(sold), wasted_qty: Number(wasted), unit_price: price } });
-      toast("Result recorded.");
+      const soldN = Number(sold), recv = t.received_qty ?? 0;
+      if (recv > 0 && soldN / recv >= 0.6) celebrate(`${soldN} of ${recv} sold!`, "Your customers asked, you listened, and it worked. Proof is now in your ledger.");
+      else toast("Result recorded. Every trial teaches MITRA what your street wants.");
       onChange();
     } catch (err) {
       toast(err instanceof ApiError ? err.message : "Failed", "err");

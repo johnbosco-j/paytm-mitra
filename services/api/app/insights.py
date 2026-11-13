@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+import itertools
 import random
 import statistics
 from collections import defaultdict
@@ -235,7 +236,7 @@ def customer_segments(sales: list, today: date | None = None) -> dict:
     for pid, ds in visits.items():
         ds = sorted(set(ds))
         rec = (today - ds[-1]).days
-        gaps = [(b - a).days for a, b in zip(ds, ds[1:], strict=False)]
+        gaps = [(b - a).days for a, b in itertools.pairwise(ds)]
         typical = statistics.median(gaps) if gaps else None
         row = {
             "id": pid[:8],

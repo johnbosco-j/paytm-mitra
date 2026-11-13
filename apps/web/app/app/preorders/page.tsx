@@ -32,7 +32,7 @@ function UpiQr({ uri }: { uri: string }) {
 }
 
 export default function PreordersPage() {
-  const { store, toast } = useApp();
+  const { store, toast, celebrate } = useApp();
   const list = useApiData<PreOrder[]>("/preorders", store?.id);
   const products = useApiData<Product[]>("/products", store?.id);
   const integ = useApiData<Integrations>("/integrations", store?.id);
@@ -76,6 +76,8 @@ export default function PreordersPage() {
   async function act(p: PreOrder, status: "paid" | "fulfilled" | "cancelled") {
     try {
       await api(`/preorders/${p.id}/status`, { body: { status } });
+      if (status === "paid") celebrate(`₹${p.amount} received`, "A customer paid before the stock even arrived.");
+      if (status === "fulfilled") toast("Handed over. Happy customer!");
       void list.reload();
     } catch (e) {
       toast(e instanceof ApiError ? e.message : "Failed", "err");
@@ -84,7 +86,8 @@ export default function PreordersPage() {
   async function sync(p: PreOrder) {
     try {
       const r = await api<PreOrder>(`/preorders/${p.id}/sync`, { method: "POST" });
-      toast(r.status === "paid" ? "Paytm confirmed the payment" : "Not paid yet");
+      if (r.status === "paid") celebrate(`₹${p.amount} received`, "Paytm confirmed the payment.");
+      else toast("Not paid yet");
       void list.reload();
     } catch (e) {
       toast(e instanceof ApiError ? e.message : "Failed", "err");

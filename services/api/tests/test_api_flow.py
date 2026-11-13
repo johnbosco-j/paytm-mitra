@@ -177,3 +177,15 @@ def test_size_guard_strips_invented_sizes():
     assert out[0]["normalized_item"] == "rose milk" and "size not mentioned" in out[0]["uncertainties"]
     assert out[1]["normalized_item"] == "aavin milk 500ml"  # "arai litre" was said
     assert out[2]["normalized_item"] == "mango lassi 200ml"  # the shop's own catalog name
+
+
+def test_item_guard_flags_hallucinated_items():
+    from app.ai import guard_items
+
+    reqs = [
+        {"raw_item": "butter", "uncertainties": [], "requires_review": False},
+        {"raw_item": "மாம்பழ லஸ்ஸி", "uncertainties": [], "requires_review": False},
+    ]
+    out = guard_items(reqs, "இன்னைக்கு எட்டு பேர் மாம்பழ லஸ்ஸி கேட்டாங்க")
+    assert out[0].get("suspect") and "item not heard in the note" in out[0]["uncertainties"]
+    assert not out[1].get("suspect")

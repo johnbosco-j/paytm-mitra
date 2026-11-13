@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MessageCircleQuestion, Send } from "lucide-react";
+import { MessageCircleQuestion, Send, Volume2 } from "lucide-react";
 import { useApp } from "@/components/providers";
 import { Badge, Button, Card, Input, PageHeader } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
@@ -15,11 +15,34 @@ const SUGGESTIONS = [
   "How did my last trial do?",
 ];
 
+/** Speak an answer: natural cloud voice when online, the device's own Tamil/English voice offline. */
+async function speakText(text: string, setBusy: (b: boolean) => void) {
+  setBusy(true);
+  try {
+    const res = await fetch("/api/speak", { method: "POST", headers: { "Content-Type": "application/json", "X-Store-Id": localStorage.getItem("mitra.store") ?? "" }, body: JSON.stringify({ text: text.slice(0, 600) }) });
+    if (!res.ok) throw new Error("cloud voice unavailable");
+    const url = URL.createObjectURL(await res.blob());
+    const audio = new Audio(url);
+    audio.onended = () => URL.revokeObjectURL(url);
+    await audio.play();
+  } catch {
+    const u = new SpeechSynthesisUtterance(text);
+    const tamil = /[\u0B80-\u0BFF]/.test(text);
+    u.lang = tamil ? "ta-IN" : "en-IN";
+    const v = speechSynthesis.getVoices().find((x) => x.lang.replace("_", "-").startsWith(u.lang));
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  } finally {
+    setBusy(false);
+  }
+}
+
 export default function AskPage() {
   const { t, store } = useApp();
   const [q, setQ] = useState("");
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [busy, setBusy] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
 
   async function ask(question: string) {
     if (!question.trim() || busy) return;
@@ -58,7 +81,12 @@ export default function AskPage() {
                 {m.a ? (
                   <>
                     <p className="whitespace-pre-wrap">{m.a}</p>
-                    <p className="mt-2"><Badge>grounded on store records · {m.model}</Badge></p>
+                    <p className="mt-2 flex flex-wrap items-center gap-2">
+                      <Badge>grounded on store records · {m.model}</Badge>
+                      <button onClick={() => speakText(m.a!, setSpeaking)} disabled={speaking} className="inline-flex items-center gap-1 rounded-full bg-[#e6f6fd] px-3 py-1 text-xs font-bold text-navy hover:bg-[#d4effb] disabled:opacity-50">
+                        <Volume2 className="size-3.5" /> {speaking ? "Speaking…" : "Hear it"}
+                      </button>
+                    </p>
                   </>
                 ) : m.error ? (
                   <p className="text-risk">{m.error}</p>

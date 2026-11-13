@@ -1,6 +1,6 @@
 import os
 
-os.environ["MITRA_DATABASE_URL"] = "sqlite://"
+os.environ["MITRA_DATABASE_URL"] = os.environ.get("MITRA_TEST_DATABASE_URL", "sqlite://")
 os.environ["MITRA_AUTO_CREATE_SCHEMA"] = "true"
 os.environ["MITRA_AI_PROVIDER"] = "none"  # tests never call a live model
 os.environ["MITRA_LOCAL_MODEL_URL"] = "http://127.0.0.1:9"  # no offline model in tests

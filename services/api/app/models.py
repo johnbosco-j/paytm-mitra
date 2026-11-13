@@ -161,7 +161,7 @@ class IdempotencyRecord(Base):
     __table_args__ = (UniqueConstraint("store_id", "action", "key"),)
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
     store_id: Mapped[str] = mapped_column(ForeignKey("stores.id", ondelete="CASCADE"))
-    action: Mapped[str] = mapped_column(String(40))
+    action: Mapped[str] = mapped_column(String(80))
     key: Mapped[str] = mapped_column(String(80))
     response: Mapped[dict] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

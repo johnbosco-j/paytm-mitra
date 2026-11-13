@@ -1,0 +1,340 @@
+{
+  "store": "Murugan Stores",
+  "captured_at": "2026-11-13T03:10:35.461Z",
+  "forecast": {
+    "status": "ok",
+    "method": "weekday profile x 14-day level",
+    "days": [
+      {
+        "date": "2026-11-13",
+        "weekday": "Fri",
+        "expected": 3647,
+        "low": 3085,
+        "high": 4209,
+        "festival": null
+      },
+      {
+        "date": "2026-11-14",
+        "weekday": "Sat",
+        "expected": 4998,
+        "low": 4228,
+        "high": 5767,
+        "festival": null
+      },
+      {
+        "date": "2026-11-15",
+        "weekday": "Sun",
+        "expected": 4355,
+        "low": 3684,
+        "high": 5026,
+        "festival": null
+      },
+      {
+        "date": "2026-11-16",
+        "weekday": "Mon",
+        "expected": 3550,
+        "low": 3004,
+        "high": 4097,
+        "festival": null
+      },
+      {
+        "date": "2026-11-17",
+        "weekday": "Tue",
+        "expected": 3050,
+        "low": 2580,
+        "high": 3519,
+        "festival": null
+      },
+      {
+        "date": "2026-11-18",
+        "weekday": "Wed",
+        "expected": 3135,
+        "low": 2652,
+        "high": 3618,
+        "festival": null
+      },
+      {
+        "date": "2026-11-19",
+        "weekday": "Thu",
+        "expected": 3652,
+        "low": 3090,
+        "high": 4214,
+        "festival": null
+      }
+    ],
+    "week_total": 26387,
+    "backtest": {
+      "days": 14,
+      "mape_model": 10.4,
+      "mape_naive": 16.2,
+      "beats_naive": true
+    },
+    "last7": 27358,
+    "prev7": 25905,
+    "trend_pct": 5.6,
+    "upcoming_festivals": [
+      {
+        "date": "2026-12-25",
+        "name": "Christmas",
+        "in_days": 42
+      }
+    ]
+  },
+  "cashflow": {
+    "status": "ok",
+    "horizon_days": 30,
+    "runs": 2000,
+    "probability_shortfall": 0.269,
+    "earliest_risk_date": "2026-12-05",
+    "expected_end": 4854,
+    "p10_min": -284,
+    "band": [
+      {
+        "date": "2026-11-13",
+        "p10": 3036,
+        "p50": 3247,
+        "p90": 3360
+      },
+      {
+        "date": "2026-11-14",
+        "p10": 3847,
+        "p50": 4090,
+        "p90": 4317
+      },
+      {
+        "date": "2026-11-15",
+        "p10": 4577,
+        "p50": 4844,
+        "p90": 5103
+      },
+      {
+        "date": "2026-11-16",
+        "p10": 5184,
+        "p50": 5463,
+        "p90": 5729
+      },
+      {
+        "date": "2026-11-17",
+        "p10": 5715,
+        "p50": 5992,
+        "p90": 6265
+      },
+      {
+        "date": "2026-11-18",
+        "p10": 6221,
+        "p50": 6532,
+        "p90": 6835
+      },
+      {
+        "date": "2026-11-19",
+        "p10": 6836,
+        "p50": 7168,
+        "p90": 7507
+      },
+      {
+        "date": "2026-11-20",
+        "p10": 7443,
+        "p50": 7798,
+        "p90": 8163
+      },
+      {
+        "date": "2026-11-21",
+        "p10": 8286,
+        "p50": 8673,
+        "p90": 9049
+      },
+      {
+        "date": "2026-11-22",
+        "p10": 7410,
+        "p50": 7830,
+        "p90": 8225
+      },
+      {
+        "date": "2026-11-23",
+        "p10": 8023,
+        "p50": 8450,
+        "p90": 8854
+      },
+      {
+        "date": "2026-11-24",
+        "p10": 8554,
+        "p50": 8984,
+        "p90": 9385
+      },
+      {
+        "date": "2026-11-25",
+        "p10": 8640,
+        "p50": 9080,
+        "p90": 9502
+      },
+      {
+        "date": "2026-11-26",
+        "p10": 9250,
+        "p50": 9715,
+        "p90": 10152
+      },
+      {
+        "date": "2026-11-27",
+        "p10": 9852,
+        "p50": 10341,
+        "p90": 10808
+      },
+      {
+        "date": "2026-11-28",
+        "p10": 10709,
+        "p50": 11210,
+        "p90": 11682
+      },
+      {
+        "date": "2026-11-29",
+        "p10": 11444,
+        "p50": 11955,
+        "p90": 12473
+      },
+      {
+        "date": "2026-11-30",
+        "p10": 12052,
+        "p50": 12580,
+        "p90": 13090
+      },
+      {
+        "date": "2026-12-01",
+        "p10": 4077,
+        "p50": 4613,
+        "p90": 5126
+      },
+      {
+        "date": "2026-12-02",
+        "p10": 4630,
+        "p50": 5152,
+        "p90": 5696
+      },
+      {
+        "date": "2026-12-03",
+        "p10": 5238,
+        "p50": 5783,
+        "p90": 6336
+      },
+      {
+        "date": "2026-12-04",
+        "p10": 5862,
+        "p50": 6410,
+        "p90": 6984
+      },
+      {
+        "date": "2026-12-05",
+        "p10": -284,
+        "p50": 283,
+        "p90": 846
+      },
+      {
+        "date": "2026-12-06",
+        "p10": 452,
+        "p50": 1026,
+        "p90": 1634
+      },
+      {
+        "date": "2026-12-07",
+        "p10": 1063,
+        "p50": 1650,
+        "p90": 2249
+      },
+      {
+        "date": "2026-12-08",
+        "p10": 1579,
+        "p50": 2182,
+        "p90": 2789
+      },
+      {
+        "date": "2026-12-09",
+        "p10": 2109,
+        "p50": 2725,
+        "p90": 3349
+      },
+      {
+        "date": "2026-12-10",
+        "p10": 2734,
+        "p50": 3349,
+        "p90": 3980
+      },
+      {
+        "date": "2026-12-11",
+        "p10": 3326,
+        "p50": 3975,
+        "p90": 4626
+      },
+      {
+        "date": "2026-12-12",
+        "p10": 4183,
+        "p50": 4853,
+        "p90": 5514
+      }
+    ],
+    "biggest_outflow": {
+      "date": "2026-12-01",
+      "amount": 8500
+    },
+    "assumptions": {
+      "cash_on_hand": "2600.00",
+      "margin_pct": "18.00",
+      "commitments": "0",
+      "sales_basis": "bootstrapped from your last 8 weeks, by weekday"
+    }
+  },
+  "customers": {
+    "status": "ok",
+    "customers": 70,
+    "counts": {
+      "regular": 58,
+      "at_risk": 3,
+      "lost": 9,
+      "new": 0,
+      "occasional": 0
+    },
+    "at_risk_typical_spend": 312,
+    "note": "Payers are pseudonymous (salted hash). Messaging needs the customer's consent."
+  },
+  "health": {
+    "score": 70,
+    "band": "steady",
+    "components": [
+      {
+        "name": "Logs missed demand",
+        "value": 0.7,
+        "weight": 20,
+        "detail": "7 of the last 14 days"
+      },
+      {
+        "name": "Closes the loop on trials",
+        "value": 0.5,
+        "weight": 15,
+        "detail": "0 completed, 0 stale"
+      },
+      {
+        "name": "Knows its costs",
+        "value": 1,
+        "weight": 15,
+        "detail": "6/6 products priced"
+      },
+      {
+        "name": "Sales trend",
+        "value": 0.64,
+        "weight": 20,
+        "detail": "+5.6% vs previous week"
+      },
+      {
+        "name": "Cash buffer",
+        "value": 0.73,
+        "weight": 20,
+        "detail": "27% chance of a 30-day shortfall"
+      },
+      {
+        "name": "Keeps regulars",
+        "value": 0.66,
+        "weight": 10,
+        "detail": "17% of repeat customers at risk"
+      }
+    ],
+    "disclaimer": "A business-habits score to guide the owner. Not a credit score and never used for lending decisions."
+  }
+}

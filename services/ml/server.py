@@ -25,7 +25,7 @@ HERE = Path(__file__).parent
 FUSED = HERE / "models" / "mitra-lite-4bit"
 MODEL = os.environ.get("MITRA_LITE_MODEL") or (str(FUSED) if FUSED.exists() else str(HERE / "models" / "qwen2.5-1.5b-instruct"))
 ADAPTER = os.environ.get("MITRA_LITE_ADAPTER") or (None if FUSED.exists() else str(HERE / "adapters" / "mitra-lite"))
-WHISPER = os.environ.get("MITRA_WHISPER_MODEL")  # e.g. a local folder with mlx-community/whisper-large-v3-turbo
+WHISPER = os.environ.get("MITRA_WHISPER_MODEL") or (str(HERE / "models" / "whisper-large-v3-turbo") if (HERE / "models" / "whisper-large-v3-turbo").exists() else None)
 
 app = FastAPI(title="MITRA-Lite", version="1.0")
 _lock = threading.Lock()  # MLX generation is not re-entrant; serialise requests
@@ -90,5 +90,6 @@ async def transcribe(audio: UploadFile = File(...)):
         f.write(await audio.read())
         f.flush()
         with _lock:
-            r = mlx_whisper.transcribe(f.name, path_or_hf_repo=WHISPER)
+            r = mlx_whisper.transcribe(f.name, path_or_hf_repo=WHISPER, language=None, task="transcribe",
+                                       initial_prompt="கடை, வாடிக்கையாளர், கேட்டாங்க, லஸ்ஸி, பால், மாவு")
     return {"text": r.get("text", "")}

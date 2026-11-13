@@ -8,14 +8,15 @@ import { STEP_IDS, useStory } from "@/lib/story";
 import { useApp } from "@/components/providers";
 import { SmoothScroll } from "./SmoothScroll";
 import { StoryScroll } from "./StoryScroll";
+import { StorySound } from "./StorySound";
 
 const StoryCanvas = dynamic(() => import("@/components/three/StoryCanvas"), { ssr: false });
 
 type Chapter = { kicker: string; title: string; body: string; chips?: string[] };
 const CHAPTERS: Chapter[] = [
-  { kicker: "6:40 pm · Velachery, Chennai", title: "A customer walks into Murugan Stores", body: "Sixty years of trust, one small shop, a QR on the counter that takes every payment." , chips: ["Kirana", "Tamil-speaking owner"] },
-  { kicker: "The ask", title: "“Anna, mango lassi irukka?”", body: "She wants a chilled mango lassi. It's the third person today." },
-  { kicker: "The answer", title: "“Illa.”", body: "Murugan doesn't stock it. She walks out. The sale didn't fail. It never existed.", chips: ["Lost sale"] },
+  { kicker: "6:40 pm · Velachery, Chennai", title: "Murugan has opened this shutter every morning for 22 years", body: "He knows every family on the street by name. The QR on his counter takes every payment. It just can't hear his customers.", chips: ["Kirana", "Tamil-speaking owner"] },
+  { kicker: "The ask", title: "“Anna, mango lassi irukka?”", body: "Priya stops on her way home from work. It's hot, and she wants a chilled mango lassi. She is the third person to ask today." },
+  { kicker: "The answer", title: "“Illa-mma…”", body: "He says it kindly, the way he has said it a hundred times. She smiles, and walks two streets further to a supermarket. The sale didn't fail. It never existed.", chips: ["Lost sale", "Lost customer?"] },
   { kicker: "The blind spot", title: "The QR never sees it", body: "No payment means no record. Every payments dashboard, even the AI ones, sees only what sold, never what was asked for and missed.", chips: ["₹0 recorded", "0 signals"] },
   { kicker: "A week later", title: "24 asks. Zero data.", body: "It happened 24 times in 7 days. Murugan remembers maybe three. Nobody wrote it down." },
   { kicker: "MITRA listens", title: "One tap. Speak Tamil, Tanglish or English.", body: "“Innaiku ettu per mango lassi ketanga.” MITRA turns it into a confirmed record: item, how many asked, why it wasn't sold. It even works offline on our own model, MITRA-Lite.", chips: ["Voice", "Offline-capable", "Merchant confirms"] },
@@ -101,6 +102,7 @@ export function StoryPage() {
       {shot === null && <StoryScroll />}
       {!clean && <Header />}
       {!clean && <ProgressRail />}
+      {!clean && <StorySound />}
 
       <main id="story" className={clean ? "invisible relative z-10" : "relative z-10"}>
         {/* 0 · hero */}
