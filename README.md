@@ -8,6 +8,16 @@ Paytm Build for India AI Hackathon, Chennai, 15 Nov 2026 · **Track 1: Merchant 
 
 When a customer asks *"mango lassi irukka?"* and the shop says *"illa"*, no payment happens, so no system records the lost sale. MITRA captures those missed requests by voice or text in **any of India's 22 scheduled languages**, English, or code-mix (Tanglish, Hinglish, Tenglish, Manglish, Kanglish). It turns them into small, owner-approved, profit-checked stocking trials and measures what actually sold. The engine is the team's **LEAP loop**: **L**isten → **E**valuate → **A**pprove → **P**rove.
 
+## The idea in one line
+
+Paytm merchants already have a Soundbox that announces payments. MITRA adds an **AI button** to it, a paid add-on for Paytm for Business merchants: press it and the Soundbox also hears what customers asked for and didn't get, logs it without a tap, and tells the owner what to stock, how many, and what it earns.
+
+| New | What it is |
+|---|---|
+| **Virtual Soundbox** (`/app/soundbox`) | A working Soundbox on screen with an AI button. Off: it announces payments. On (owner only, after confirming a counter notice): it listens, cuts speech on silence in the browser, and sends each few-second segment to `POST /api/soundbox/hear`. Missed asks are logged as "heard by Soundbox"; the device speaks a recommendation from the money engine. No audio and no transcript are stored. SAMPLE customers in Tamil, Hindi and English for a noisy hall. |
+| **Sarvam AI** (`services/api/app/sarvam.py`) | All language AI: `saaras:v3` speech-to-text (22 Indian languages + code-mix), `sarvam-105b` for extraction and answers (reasoning switched off: ~1 s per call), `bulbul:v3` for the Soundbox voice. Usage ledger and a daily call cap protect the credit balance. Gemini is used only for the shelf photo scanner. |
+| **Paytm sandbox** (`MITRA_PAYTM_ENV=sandbox`) | No live merchant ID is needed: a pre-order creates a link signed with Paytm's official checksum library and served by MITRA at `/pay/<id>`, shown as a QR. Scan, tap Pay, and the Soundbox announces it. Every sandbox screen says no real money moves. With a real MID the same code calls Paytm's staging API. |
+
 ## What's in the box
 
 | Piece | What it is |
@@ -92,7 +102,7 @@ cd services/api && MITRA_TEST_DATABASE_URL=postgresql+psycopg://mitra@127.0.0.1:
 cd apps/web && npx tsc --noEmit && npx eslint . && npx next build
 ```
 
-Current status: **38/38 backend tests pass on both SQLite and PostgreSQL 17**, Alembic migrations apply cleanly on both, ruff clean, TypeScript strict and ESLint clean.
+Current status: **42/42 backend tests pass on both SQLite and PostgreSQL 17**, Alembic migrations apply cleanly on both, ruff clean, TypeScript strict and ESLint clean.
 
 ## Layout
 
@@ -111,8 +121,20 @@ docs/01–17                    original LEAP blueprint (spec, architecture, ris
 
 `MITRA_DATABASE_URL` (default SQLite `mitra.db`; any SQLAlchemy URL, e.g. PostgreSQL), `MITRA_JWT_SECRET` (**set in any shared deployment**), `MITRA_COOKIE_SECURE=true` behind HTTPS, `MITRA_GEMINI_MODELS` (failover order), `MITRA_AI_PROVIDER=none` to force rules-only, `MITRA_API_ORIGIN` for the web proxy. The Paytm connector flag stays `false` until approved access exists.
 
+## Deploy (Vercel + hosted Postgres)
+
+1. Create a Postgres database (Supabase or Neon). Use the pooled connection string, as `postgresql+psycopg://…`.
+2. From `services/api`: `MITRA_DATABASE_URL=<url> .venv/bin/alembic upgrade head`, then `MITRA_DATABASE_URL=<url> DEMO_PASSWORD=<choose one> .venv/bin/python seed_demo.py`.
+3. Vercel project 1, root `services/api` (uses `api/index.py` + `vercel.json`). Env: `MITRA_DATABASE_URL`, `MITRA_SERVERLESS=true`, `MITRA_JWT_SECRET`, `MITRA_COOKIE_SECURE=true`, `MITRA_DATA_KEY`, `MITRA_SARVAM_API_KEY`, `MITRA_PAYTM_ENV=sandbox`, `MITRA_CORS_ORIGINS=<web URL>`.
+4. Vercel project 2, root `apps/web`. Env: `MITRA_API_ORIGIN=<API URL>`.
+
+The offline model (`services/ml`) stays on the laptop; hosted stores use AI mode "Best available".
+
 ## Known gaps (honest list)
 
+- Not deployed yet: the hosted database has to be created first (see Deploy).
+- The Soundbox voice lines exist in Tamil, Hindi and English; other languages hear English. Listening works in all 22.
+- Sandbox payments are simulated and labelled; no real Paytm transaction has been made.
 - Postgres row-level security is not added yet (tenant isolation is enforced in the API layer and tested).
 - Offline voice needs the Whisper model downloaded into `services/ml/models/` (1.5 GB, not in git); the first offline voice note after a cold start takes ~50 s while models load, then a few seconds.
 - Paytm Payment Links: signing and requests follow Paytm's staging spec, but Paytm's dashboard reports "We hit a snag creating your staging MID", so the MID is not active yet and the API answers "Merchant Id invalid". Pre-orders fall back to UPI QR / pay later until Paytm finishes creating it (Retry in the dashboard, or Paytm support). The Paytm MCP server repo was not publicly available.

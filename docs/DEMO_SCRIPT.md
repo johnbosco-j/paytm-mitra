@@ -2,6 +2,17 @@
 
 **Before you go on stage:** run `services/api/.venv/bin/python services/api/seed_demo.py` (resets the SAMPLE store to 16 lassi asks). Sign in as the owner in one browser window and as staff in a private window. Phone hotspot ready. Keep `pitch/Paytm_MITRA_Pitch.pptx` open as the fallback.
 
+## Soundbox opening (60 seconds, do this first)
+
+| Say | Do |
+|---|---|
+| "Every Paytm merchant has a Soundbox. It tells him what he sold. We added one button." | Open **Soundbox**. Point at the AI button. |
+| "He presses it once. From now on the Soundbox also hears what customers ask for and don't get." | Press **AI**, tick the notice, **Turn on**. Say across the counter: *"Anna, mango lassi irukka?" "Illa-mma, namma kadaila illa."* (Noisy hall: press the **Tamil** SAMPLE button instead.) |
+| "No typing, no tap. It logged the ask, and it's telling him what to do." | The log shows Heard → Logged → the Soundbox speaks: *"14 people asked this week. Try stocking 10 first."* |
+| "And it's still a Soundbox." | **Pre-orders** → new pre-order, method Paytm link → show the QR. A teammate scans it and taps Pay. The Soundbox announces the payment (sandbox). |
+
+Then continue with the flow below from Opportunities.
+
 | Time | Say | Do |
 |---|---|---|
 | 0:00 | "Every QR in India knows what sold. None of them knows what *didn't*." | Open http://localhost:3000 and scroll the **3D story** slowly: the ask, the "illa", the blind QR, the 24 asks piling up. (15 s) |

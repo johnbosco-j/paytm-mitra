@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="MITRA_", env_file=".env", extra="ignore")
 
     database_url: str = "sqlite:///./mitra.db"
+    serverless: bool = False  # true on Vercel: no connection pool, no prepared statements
     auto_create_schema: bool = False  # tests only; real schema comes from Alembic migrations
     jwt_secret: str = "dev-only-change-me-please-32-bytes-min"
     jwt_ttl_hours: int = 72

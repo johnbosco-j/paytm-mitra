@@ -18,6 +18,13 @@ def make_engine(url: str):
             from sqlalchemy.pool import StaticPool
 
             kwargs["poolclass"] = StaticPool
+    if url.startswith("postgresql") and get_settings().serverless:
+        # Serverless (Vercel): one short-lived connection per request through a transaction pooler,
+        # which cannot keep prepared statements.
+        from sqlalchemy.pool import NullPool
+
+        kwargs["poolclass"] = NullPool
+        kwargs["connect_args"] = {"prepare_threshold": None}
     engine = create_engine(url, **kwargs)
     if url.startswith("sqlite"):
 

@@ -7,6 +7,7 @@ Demo logins (local/test only):
   staff  demo.staff@mitra.test / mitra-demo-2026
 """
 
+import os
 from datetime import UTC, datetime, timedelta, timezone
 from decimal import Decimal
 
@@ -31,7 +32,8 @@ from app.security import hash_password
 
 OWNER = ("demo.owner@mitra.test", "Joe Naren A")
 STAFF = ("demo.staff@mitra.test", "Ravi (staff)")
-PASSWORD = "mitra-demo-2026"  # local demo only
+# Local demo default. For a hosted demo set DEMO_PASSWORD so the jury login is not the one in this file.
+PASSWORD = os.environ.get("DEMO_PASSWORD") or "mitra-demo-2026"
 IST = timezone(timedelta(hours=5, minutes=30))
 
 PRODUCTS = [
@@ -64,6 +66,8 @@ def run() -> None:
                 u = User(email=email, name=name, password_hash=hash_password(PASSWORD))
                 db.add(u)
                 db.flush()
+            elif os.environ.get("DEMO_PASSWORD"):
+                u.password_hash = hash_password(PASSWORD)
             u.name = name  # keep demo names current when the story's cast changes
             users[email] = u
         owner, staff = users[OWNER[0]], users[STAFF[0]]
