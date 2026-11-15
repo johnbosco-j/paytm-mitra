@@ -13,7 +13,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     args: ["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist", "--hide-scrollbars", "--mute-audio", "--autoplay-policy=no-user-gesture-required",
       "--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream", `--use-file-for-fake-audio-capture=${path.join(__dirname, "mic.wav")}`] });
   const p = await b.newPage();
-  await p.setViewport({ width: 1920, height: 1080, deviceScaleFactor: 1 });
+  await p.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1.5 });
   const hide = (pg = p) => pg.addStyleTag({ content: "nextjs-portal{display:none!important} html{scroll-behavior:auto}" }).catch(() => {});
   const go = async (url, wait, pg = p) => { await pg.goto(BASE + url, { waitUntil: "load", timeout: 120000 }); await hide(pg); await sleep(wait); };
   const rec = async (name, fn, pg = p) => {
@@ -86,6 +86,21 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     await rec("opps", async () => { await sleep(1500); await click(p, (e) => e.textContent.includes("Mango")); await sleep(3500); await glide(p, 420, 2500); await sleep(6000); });
   }
   if (!only || only === "trials") {
+    // A real trial run through the API first (the golden case: 16 bought at Rs 22, 14 sold at Rs 35), so the page
+    // shows a finished result card and not an empty state.
+    const made = await p.evaluate(async (sid) => {
+      const h = { "Content-Type": "application/json", "X-Store-Id": sid };
+      const list = await (await fetch("/api/trials", { headers: h })).json();
+      if ((list.trials ?? list.items ?? list).some?.((t) => t.status === "completed")) return "exists";
+      const post = async (u, b) => { const r = await fetch("/api" + u, { method: "POST", headers: { ...h, "Idempotency-Key": crypto.randomUUID() }, body: JSON.stringify(b ?? {}) }); return [r.status, await r.json()]; };
+      const [s1, t] = await post("/trials", { item: "mango lassi", quantity: 16 });
+      if (s1 !== 201) return "propose " + s1 + " " + JSON.stringify(t).slice(0, 120);
+      const [s2] = await post(`/trials/${t.id}/approve`);
+      const [s3] = await post(`/trials/${t.id}/receive`, { received_qty: 16, unit_cost: "22" });
+      const [s4] = await post(`/trials/${t.id}/outcome`, { sold_qty: 14, wasted_qty: 0, unit_price: "35" });
+      return [s1, s2, s3, s4].join(",");
+    }, store);
+    console.log("trial flow:", made);
     await go("/app/trials", 2500);
     await rec("trials", async () => { await sleep(2500); await glide(p, 380, 3000); await sleep(4500); });
   }
@@ -97,7 +112,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   if (!only || only === "pay") {
     const url = await preorder();
     const pay = await b.newPage();
-    await pay.setViewport({ width: 1920, height: 1080, deviceScaleFactor: 1 });
+    await pay.setViewport({ width: 1280, height: 720, deviceScaleFactor: 1.5 });
     await pay.goto(BASE + url, { waitUntil: "load" }); await hide(pay); await sleep(1500);
     await rec("pay", async () => { await sleep(3000); await click(pay, (e) => e.textContent.includes("Pay")); await sleep(5000); }, pay);
     await pay.close();
