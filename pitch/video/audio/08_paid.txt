@@ -1,0 +1,1 @@
+The Soundbox announces the payment, just as it does today. This demo uses a clearly labelled Paytm sandbox. With a merchant I D, the same code calls Paytm.

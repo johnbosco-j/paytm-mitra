@@ -1,0 +1,1 @@
+Under the hood, speech, understanding and voice all run on Sarvam A I. And for shops with no internet, we fine tuned our own small model, MITRA Lite, which runs fully offline.

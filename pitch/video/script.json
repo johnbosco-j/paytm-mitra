@@ -1,13 +1,86 @@
 [
-  {"id": "01_hero", "caption": "Every Soundbox knows what sold", "say": "Every Paytm merchant has a Soundbox. It tells him what he sold. It has never told him what he could have sold."},
-  {"id": "02_illa", "caption": "\"Mango lassi irukka?\"  \"Illa.\"", "say": "A customer asks Naren for mango lassi. He says, illa. She walks to the cafe down the road. No payment, so no record. That lost sale is invisible to every system he owns."},
-  {"id": "03_button", "caption": "One new button on the Soundbox: AI", "say": "MITRA adds one thing to the Soundbox he already has. An A I button. A paid add-on for Paytm for Business merchants."},
-  {"id": "04_heard", "caption": "It listens. It logs. No typing, no tap.", "say": "He presses it once. Now the Soundbox listens at the counter, in any of India's twenty two languages. It heard the customer ask, heard him say no, and logged it. No typing. No tap. The audio is thrown away at once."},
-  {"id": "05_says", "caption": "Then it tells him what to stock", "say": "Then it speaks. Many customers asked this week. Try stocking a small first batch. That number does not come from the A I. It comes from tested money code."},
-  {"id": "06_opps", "caption": "Asks are not sales: a cautious, priced trial", "say": "In the app he sees the full picture. How many asked, what it costs, and what he earns if only some of it sells."},
-  {"id": "07_trials", "caption": "Staff propose. Only the owner approves.", "say": "Staff can propose a trial. Only the owner can approve the spend. Later he records what really sold, and MITRA shows predicted against actual profit."},
-  {"id": "08_pay", "caption": "A missed ask becomes a paid pre-order", "say": "Next time a customer asks, he takes a pre-order. She scans the code, and pays."},
-  {"id": "09_paid", "caption": "And the Soundbox announces it", "say": "And the Soundbox announces the payment, exactly like today. Here it runs on a labelled Paytm sandbox. With a merchant I D, the same code calls Paytm."},
-  {"id": "10_insights", "caption": "What sold + what didn't = a shop that plans ahead", "say": "Because MITRA knows what sold and what did not, it can forecast the week, warn before cash runs short, and spot regulars who stopped coming."},
-  {"id": "11_close", "caption": "MITRA · the AI button for the Paytm Soundbox · Made by RivenDevs", "say": "All language A I runs on Sarvam. Speech, understanding and voice. Every rupee is computed by code. MITRA. The Soundbox tells you what sold. The A I button tells you what you missed."}
+ {
+  "id": "01_title",
+  "kind": "slide",
+  "src": "s-01",
+  "caption": "Paytm MITRA · the AI button for the Soundbox",
+  "say": "This is MITRA. One new button for the Paytm Soundbox, built by team RivenDevs."
+ },
+ {
+  "id": "02_story",
+  "kind": "clip",
+  "src": "story",
+  "caption": "\"Anna, mango lassi irukka?\"   \"Illa-mma.\"",
+  "say": "Meet Naren. He runs Naren Stores in Velachery. A couple walks up and asks for mango lassi. He does not have it, so he says, illa. They smile, and walk to the big cafe down the road. No payment happened, so nothing was recorded. For every system Naren owns, that sale never existed."
+ },
+ {
+  "id": "03_blind",
+  "kind": "slide",
+  "src": "s-03",
+  "caption": "Payment data only sees what already sold",
+  "say": "This is the blind spot. Every Q R code and every payments dashboard knows what sold. None of them knows what a customer asked for, and did not get."
+ },
+ {
+  "id": "04_button",
+  "kind": "clip",
+  "src": "soundbox",
+  "caption": "Press the AI button once. It listens, logs, and advises.",
+  "say": "Every Paytm merchant already has a Soundbox. MITRA adds an A I button. The owner presses it once, and confirms a notice is on display. Now it listens at the counter, in any of India's twenty two languages. It heard the customer ask, and heard him say no. It logged the missed sale by itself, then spoke a recommendation in Tamil. The audio is deleted at once."
+ },
+ {
+  "id": "05_opps",
+  "kind": "clip",
+  "src": "opps",
+  "caption": "Asks are not sales: a cautious trial, priced by tested code",
+  "say": "In the app, those asks become an opportunity. MITRA sizes a small, safe first batch, and shows what he puts in and what he earns. The A I only understands language. Every rupee is computed by tested code."
+ },
+ {
+  "id": "06_trials",
+  "kind": "clip",
+  "src": "trials",
+  "caption": "Staff propose. Only the owner approves. Then the proof.",
+  "say": "Staff can propose a trial, but only the owner can approve the spend. Afterwards he records what really sold, and sees predicted against actual profit."
+ },
+ {
+  "id": "07_pay",
+  "kind": "clip",
+  "src": "pay",
+  "caption": "A missed ask becomes a paid pre-order",
+  "say": "And the next customer who asks does not hear, illa. She gets a pre-order link, scans it, and pays."
+ },
+ {
+  "id": "08_paid",
+  "kind": "clip",
+  "src": "paid",
+  "caption": "The Soundbox announces it, like it always has",
+  "say": "The Soundbox announces the payment, just as it does today. This demo uses a clearly labelled Paytm sandbox. With a merchant I D, the same code calls Paytm."
+ },
+ {
+  "id": "09_insights",
+  "kind": "clip",
+  "src": "insights",
+  "caption": "What sold + what didn't = a shop that plans ahead",
+  "say": "Because MITRA knows both what sold and what did not, it forecasts the week, warns before cash runs short, and spots regular customers who have stopped coming."
+ },
+ {
+  "id": "10_model",
+  "kind": "slide",
+  "src": "s-09",
+  "caption": "Sarvam AI in the cloud · our own MITRA-Lite offline",
+  "say": "Under the hood, speech, understanding and voice all run on Sarvam A I. And for shops with no internet, we fine tuned our own small model, MITRA Lite, which runs fully offline."
+ },
+ {
+  "id": "11_business",
+  "kind": "slide",
+  "src": "s-12",
+  "caption": "A paid add-on for Paytm for Business merchants",
+  "say": "For Paytm, this is a paid add-on on hardware merchants already own, and a demand signal that no payment rail has."
+ },
+ {
+  "id": "12_close",
+  "kind": "slide",
+  "src": "s-13",
+  "caption": "The Soundbox tells you what sold. The AI button tells you what you missed.",
+  "say": "The Soundbox tells you what sold. The A I button tells you what you missed. That is MITRA. Thank you."
+ }
 ]

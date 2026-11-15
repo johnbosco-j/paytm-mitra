@@ -1,0 +1,1 @@
+Staff can propose a trial, but only the owner can approve the spend. Afterwards he records what really sold, and sees predicted against actual profit.
