@@ -30,3 +30,5 @@ services/api/.pgdata/
 .env*.local
 .vercel
 JURY_LOGIN.txt
+pitch/video/parts/
+pitch/video/concat.txt
