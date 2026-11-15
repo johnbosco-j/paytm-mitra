@@ -220,3 +220,15 @@ class Expense(Base):
     cadence: Mapped[str] = mapped_column(String(10))  # once | weekly | monthly
     next_due: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class AiCall(Base):
+    """Usage ledger for the AI provider (credit budgeting). No content is stored, only sizes."""
+
+    __tablename__ = "ai_calls"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    endpoint: Mapped[str] = mapped_column(String(60), index=True)
+    units: Mapped[float] = mapped_column(default=0.0)
+    ok: Mapped[bool] = mapped_column(default=True)
+    latency_ms: Mapped[int] = mapped_column(default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), index=True)

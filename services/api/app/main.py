@@ -23,7 +23,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from . import ai, langs, paytm
+from . import ai, langs, paytm, sarvam
 from . import economics as econ
 from .config import get_settings
 from .db import Base, engine, get_db
@@ -239,8 +239,8 @@ def health():
     return {
         "ok": True,
         "service": "mitra-api",
-        "ai_provider": "gemini" if ai.ai_available() else "rules-only",
-        "ai_model": s.gemini_model if ai.ai_available() else None,
+        "ai_provider": ("sarvam" if sarvam.enabled() else "gemini") if ai.ai_available() else "rules-only",
+        "ai_model": (s.sarvam_chat_model if sarvam.enabled() else s.gemini_model) if ai.ai_available() else None,
         "paytm_connector_enabled": s.paytm_connector_enabled,
         "paytm_links": "configured" if paytm.configured() else "not_connected",
         "offline_model": ai.local_status(),

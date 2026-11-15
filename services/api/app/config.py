@@ -26,6 +26,15 @@ class Settings(BaseSettings):
     def gemini_chain(self) -> list[str]:
         return [m.strip() for m in self.gemini_models.split(",") if m.strip()]
 
+    # Sarvam AI (primary provider when the key is set). Model ids are settings so they can change without code edits.
+    sarvam_api_key: str = ""
+    sarvam_stt_model: str = "saaras:v3"
+    sarvam_chat_model: str = "sarvam-105b"
+    sarvam_tts_model: str = "bulbul:v3"
+    sarvam_speaker: str = "kavitha"
+    sarvam_timeout_s: float = 40.0
+    sarvam_daily_cap: int = 600  # Sarvam calls per 24 h across the whole deployment; 0 = no cap
+
     # Paytm connectors stay off until approved credentials and terms exist (ADR-004).
     paytm_connector_enabled: bool = False
     # Paytm Payment Links (staging by default). Keep secrets in services/api/.env, never in git.

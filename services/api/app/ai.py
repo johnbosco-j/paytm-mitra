@@ -16,7 +16,7 @@ from dataclasses import dataclass
 
 import httpx
 
-from . import langs
+from . import langs, sarvam
 from .config import get_settings
 
 log = logging.getLogger("mitra.ai")
@@ -90,7 +90,7 @@ def _gemini_key() -> str | None:
 
 def ai_available() -> bool:
     s = get_settings()
-    return s.ai_provider == "gemini" and bool(_gemini_key())
+    return sarvam.enabled() or (s.ai_provider == "gemini" and bool(_gemini_key()))
 
 
 def _gemini_call(model: str, parts: list[dict], system: str | None, schema: dict | None, temperature: float) -> str:
@@ -125,6 +125,16 @@ _cooldown: dict[str, float] = {}  # simple circuit breaker: model -> monotonic t
 
 
 def _gemini_generate(parts: list[dict], system: str, schema: dict | None = None, temperature: float = 0.1) -> str:
+    """Text generation through the configured provider. Sarvam first (text only); Gemini for image/audio parts."""
+    if sarvam.usable_for(parts):
+        try:
+            out = sarvam.generate_parts(parts, system, schema, temperature)
+        except sarvam.SarvamError as e:
+            raise ProviderUnavailable(str(e)) from e
+        _last_model["provider"] = "sarvam"
+        _last_model["model"] = get_settings().sarvam_chat_model
+        return out
+    _last_model["provider"] = "gemini"
     if not _gemini_key():
         raise ProviderUnavailable("GEMINI_API_KEY not configured")
     errors = []
@@ -150,6 +160,8 @@ def _gemini_generate(parts: list[dict], system: str, schema: dict | None = None,
 
 
 def last_model() -> str:
+    if _last_model.get("provider") == "sarvam" or (sarvam.enabled() and "provider" not in _last_model):
+        return "sarvam:" + _last_model.get("model", get_settings().sarvam_chat_model)
     return "gemini:" + _last_model.get("model", get_settings().gemini_model)
 
 
@@ -291,6 +303,19 @@ def _extract_requests_raw(
     catalog_names = catalog_names or []
     cloud_ok = mode != "offline" and ai_available()
     if audio:
+        if cloud_ok and sarvam.enabled():
+            # Sarvam: speech-to-text first (22 Indian languages, code-mix), then one chat call for the structure.
+            try:
+                transcript, heard = sarvam.stt(audio, audio_mime, language_hint)
+            except sarvam.SarvamError as e:
+                raise ProviderUnavailable(str(e)) from e
+            if not transcript:
+                return ExtractionResult(transcript="", language=heard, english_gloss="", requests=[], extractor="sarvam:" + get_settings().sarvam_stt_model)
+            res = _text_chain(transcript, catalog_names, cloud_ok=True)
+            res.transcript = transcript
+            if heard and heard != "und":
+                res.language = heard
+            return res
         if cloud_ok:
             parts: list[dict] = [
                 {"text": f"CATALOG: {', '.join(catalog_names) or '(empty)'}\nLANGUAGE HINT: {language_hint}\n"},
@@ -594,6 +619,11 @@ TTS_MODELS = ["gemini-2.5-flash-preview-tts", "gemini-3.1-flash-tts-preview", "g
 
 def text_to_speech(text: str, voice: str = "Kore") -> bytes:
     """Gemini TTS -> 24 kHz mono PCM wrapped as WAV. Tamil and English both supported by the model."""
+    if sarvam.enabled():
+        try:
+            return sarvam.tts(text)
+        except sarvam.SarvamError as e:
+            raise ProviderUnavailable(str(e)) from e
     if not ai_available():
         raise ProviderUnavailable("Cloud voice is not configured")
     import struct
