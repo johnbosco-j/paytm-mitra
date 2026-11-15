@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 from . import ai, paytm
 from . import crypto as pii
 from . import economics as econ
+from .config import get_settings
 from .db import get_db
 from .models import IdempotencyRecord, PreOrder, Product, StockMovement
 from .opportunities import match_product, normalize_item
@@ -78,7 +79,7 @@ class PreOrderIn(BaseModel):
 @router.get("/integrations")
 def integrations(ctx: StoreContext = Depends(store_context)):
     return {
-        "paytm_links": {"connected": paytm.configured(), "env": "staging" if paytm.configured() else None},
+        "paytm_links": {"connected": paytm.configured(), "env": get_settings().paytm_env if paytm.configured() else None, "sandbox": paytm.sandbox()},
         "upi_qr": {"configured": bool(ctx.store.upi_vpa), "vpa": ctx.store.upi_vpa},
         "offline_model": ai.local_status(force=True),
         "cloud_ai": ai.ai_available(),
@@ -222,6 +223,8 @@ def sync_payment(pid: str, ctx: StoreContext = Depends(store_context), db: Sessi
     p = _owned(db, ctx, pid)
     if p.method != "paytm_link" or not p.paytm_link_id:
         raise api_error(422, "NOT_PAYTM", "Only Paytm-link pre-orders can be checked automatically.")
+    if paytm.sandbox():
+        return s_preorder(p)  # the sandbox pay page updates the pre-order directly
     try:
         paid = paytm.fetch_paid(p.paytm_link_id)
     except paytm.PaytmUnavailable as e:

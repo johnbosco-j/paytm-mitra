@@ -2,6 +2,10 @@
 
 Docs: https://www.paytmpayments.com/docs/api/create-link-api , /fetch-link-api , /fetch-transaction-link-api
 Disabled unless MITRA_PAYTM_MID and MITRA_PAYTM_MERCHANT_KEY are set (never commit them; put them in services/api/.env).
+
+MITRA_PAYTM_ENV=sandbox runs MITRA's own Paytm SANDBOX: the same request body, signed with the same official
+library, but served by MITRA (pay page at /pay/<linkId>). No real money moves and every screen says so. It lets the
+whole pre-order -> pay -> Soundbox announcement loop be shown without a live merchant ID.
 """
 
 from __future__ import annotations
@@ -34,9 +38,16 @@ class PaymentLink:
     raw_status: str
 
 
+SANDBOX_KEY = "MITRASANDBOXKEY1"  # 16-byte demo key: signs sandbox requests only, protects nothing
+
+
+def sandbox() -> bool:
+    return get_settings().paytm_env == "sandbox"
+
+
 def configured() -> bool:
     s = get_settings()
-    return bool(s.paytm_mid and s.paytm_merchant_key)
+    return sandbox() or bool(s.paytm_mid and s.paytm_merchant_key)
 
 
 def _signed(body: dict) -> dict:
@@ -95,6 +106,18 @@ def create_link(
     }
     if customer_mobile:
         body["customerContact"] = {"customerName": (customer_name or "Customer")[:40], "customerMobile": customer_mobile}
+    if sandbox():
+        import secrets
+
+        from paytmchecksum import PaytmChecksum
+
+        body["mid"] = "MITRA_SANDBOX"
+        payload = json.dumps(body, separators=(",", ":"))
+        signature = PaytmChecksum.generateSignature(payload, SANDBOX_KEY)
+        if not PaytmChecksum.verifySignature(payload, SANDBOX_KEY, signature):  # same check Paytm's server would do
+            raise PaytmUnavailable("Sandbox signature check failed.")
+        link_id = "SBX" + secrets.token_hex(10).upper()
+        return PaymentLink(link_id=link_id, short_url=f"/pay/{link_id}", status="awaiting_payment", raw_status="SANDBOX")
     out = _post("/link/create", body)
     return PaymentLink(
         link_id=str(out.get("linkId")),

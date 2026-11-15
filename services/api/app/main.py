@@ -1269,5 +1269,7 @@ from .preorders import router as preorder_router  # noqa: E402
 app.include_router(preorder_router)
 
 from .growth import router as growth_router  # noqa: E402
+from .soundbox import router as soundbox_router  # noqa: E402
 
 app.include_router(growth_router)
+app.include_router(soundbox_router)
