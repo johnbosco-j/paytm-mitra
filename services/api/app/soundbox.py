@@ -136,6 +136,15 @@ async def hear(
             continue  # autonomous mode only keeps what was clearly heard
         p = match_product(r["normalized_item"], products) or match_product(r["raw_item"], products)
         item = normalize_item(p.name if p else r["normalized_item"])
+        if p:  # file it under the name this product already has in the ledger, so asks add up in one opportunity
+            known = db.scalar(
+                select(DemandRequest.normalized_item)
+                .where(
+                    DemandRequest.store_id == ctx.store.id, DemandRequest.product_id == p.id, DemandRequest.status == "confirmed"
+                )
+                .order_by(DemandRequest.created_at.desc())
+            )
+            item = known or item
         recent = db.scalar(
             select(DemandRequest).where(
                 DemandRequest.store_id == ctx.store.id,
@@ -162,11 +171,14 @@ async def hear(
         )
         db.add(row)
         db.flush()
-        logged.append({"id": row.id, "item": p.name if p else item, "ask_count": row.ask_count, "reason": row.reason})
+        logged.append(
+            {"id": row.id, "item": p.name if p else item, "key": item, "ask_count": row.ask_count, "reason": row.reason}
+        )
     if logged:
         db.commit()
+        db.expire_all()  # reload rows so SQLite's naive datetimes aren't mixed with the aware ones just written
         first = logged[0]
-        opp = next((o for o in compute_opportunities(db, ctx.store, 7) if o["item"] == normalize_item(first["item"])), None)
+        opp = next((o for o in compute_opportunities(db, ctx.store, 7) if o["item"] == first["key"]), None)
         if opp and opp.get("status") == "ready" and opp.get("proposal", {}).get("quantity"):
             say = _say(lang, "reco", n=opp["evidence"]["ask_total"], item=first["item"], q=opp["proposal"]["quantity"])
         else:

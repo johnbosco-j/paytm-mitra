@@ -20,6 +20,7 @@ import {
   ScrollText,
   Settings,
   ShoppingBag,
+  Speaker,
   Sparkles,
   TriangleAlert,
   Users,
@@ -32,6 +33,7 @@ import { rupees, titleCase } from "@/lib/format";
 import { useApiData } from "@/lib/useApiData";
 
 const TILES = [
+  { href: "/app/soundbox", label: "Soundbox AI", icon: Speaker },
   { href: "/app/demand", label: "Speak an ask", icon: Mic },
   { href: "/app/demand#type", label: "Type an ask", icon: Keyboard },
   { href: "/app/demand#ledger", label: "Demand ledger", icon: ScrollText },

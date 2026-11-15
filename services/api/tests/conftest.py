@@ -4,6 +4,10 @@ os.environ["MITRA_DATABASE_URL"] = os.environ.get("MITRA_TEST_DATABASE_URL", "sq
 os.environ["MITRA_AUTO_CREATE_SCHEMA"] = "true"
 os.environ["MITRA_AI_PROVIDER"] = "none"  # tests never call a live model
 os.environ["MITRA_LOCAL_MODEL_URL"] = "http://127.0.0.1:9"  # no offline model in tests
+os.environ["MITRA_PAYTM_ENV"] = "staging"  # tests don't inherit the developer's local sandbox / keys
+os.environ["MITRA_PAYTM_MID"] = ""
+os.environ["MITRA_PAYTM_MERCHANT_KEY"] = ""
+os.environ["MITRA_SARVAM_API_KEY"] = ""
 
 import pytest
 from fastapi.testclient import TestClient

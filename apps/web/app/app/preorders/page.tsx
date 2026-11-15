@@ -185,18 +185,26 @@ export default function PreordersPage() {
             <p className="text-xs font-bold tracking-wide text-signal uppercase">{show.method === "upi_qr" ? "Scan with any UPI app" : "Paytm payment link"}</p>
             <p className="mt-1 text-lg font-bold text-navy">{show.quantity} × {titleCase(show.item)}</p>
             <p className="num text-3xl font-black text-navy">{rupees(show.amount)}</p>
-            <div className="my-4">{show.method === "upi_qr" ? <UpiQr uri={show.pay_url} /> : <p className="rounded-xl bg-[#f5f8fc] p-3 text-sm break-all text-navy">{show.pay_url}</p>}</div>
+            <div className="my-4">
+              {show.method === "upi_qr" ? <UpiQr uri={show.pay_url} /> : show.pay_url.startsWith("/pay/") ? (
+                <>
+                  <UpiQr uri={new URL(show.pay_url, window.location.origin).toString()} />
+                  <p className="mt-2 rounded-lg bg-[#fff4d6] px-2 py-1 text-[11px] font-bold text-[#7a5200] uppercase">Paytm sandbox · test payment · no real money</p>
+                  <a className="mt-2 inline-block text-sm font-semibold text-signal underline" href={show.pay_url} target="_blank" rel="noopener noreferrer">Open the pay page</a>
+                </>
+              ) : <p className="rounded-xl bg-[#f5f8fc] p-3 text-sm break-all text-navy">{show.pay_url}</p>}
+            </div>
             <div className="flex flex-wrap justify-center gap-2">
               {show.method === "paytm_link" && (
                 <a className="inline-flex h-9 items-center gap-2 rounded-xl bg-[#25d366] px-3 text-sm font-semibold text-white" target="_blank" rel="noopener noreferrer"
-                  href={`https://wa.me/?text=${encodeURIComponent(`${show.customer_name}, your ${show.item} pre-order: pay ₹${show.amount} here ${show.pay_url}`)}`}>
+                  href={`https://wa.me/?text=${encodeURIComponent(`${show.customer_name}, your ${show.item} pre-order: pay ₹${show.amount} here ${new URL(show.pay_url, window.location.origin).toString()}`)}`}>
                   <MessageCircle className="size-4" /> Share on WhatsApp
                 </a>
               )}
-              <Button size="sm" variant="secondary" onClick={() => { void navigator.clipboard?.writeText(show.pay_url!); toast("Copied"); }}><Copy className="size-4" /> Copy</Button>
+              <Button size="sm" variant="secondary" onClick={() => { void navigator.clipboard?.writeText(new URL(show.pay_url!, window.location.origin).toString()); toast("Copied"); }}><Copy className="size-4" /> Copy</Button>
               <Button size="sm" variant="ghost" onClick={() => setShow(null)}>Close</Button>
             </div>
-            <p className="mt-3 text-[11px] text-faint">Ref {show.order_ref}. Mark it paid once you see the payment in your app.</p>
+            <p className="mt-3 text-[11px] text-faint">Ref {show.order_ref}. {show.pay_url.startsWith("/pay/") ? "Scan it with a phone and tap Pay: the Soundbox announces it." : "Mark it paid once you see the payment in your app."}</p>
           </div>
         </div>
       )}

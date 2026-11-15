@@ -22,6 +22,7 @@ import {
   Settings,
   ShoppingBag,
   Sparkles,
+  Speaker,
   WifiOff,
 } from "lucide-react";
 import { api } from "@/lib/api";
@@ -30,6 +31,7 @@ import { Spinner, cx } from "./ui";
 
 const NAV = [
   { href: "/app", key: "nav_home", icon: Home },
+  { href: "/app/soundbox", key: "nav_soundbox", icon: Speaker },
   { href: "/app/demand", key: "nav_demand", icon: Mic },
   { href: "/app/opportunities", key: "nav_opps", icon: Sparkles },
   { href: "/app/trials", key: "nav_trials", icon: FlaskConical },
@@ -165,7 +167,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="relative grid grid-cols-5 items-end pb-[max(env(safe-area-inset-bottom),6px)]">
           {[
             { href: "/app", label: t.nav_home, icon: Home },
-            { href: "/app/opportunities", label: t.tab_opps, icon: Sparkles },
+            { href: "/app/soundbox", label: t.nav_soundbox, icon: Speaker },
             { href: "/app/demand", label: "Speak", icon: Mic, center: true },
             { href: "/app/trials", label: t.nav_trials, icon: FlaskConical },
             { href: "/app/preorders", label: t.tab_preorders, icon: ScrollText },

@@ -275,7 +275,7 @@ export default function DemandPage() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{titleCase(r.normalized_item)}</p>
                   <p className="truncate text-xs text-faint">
-                    {reasonLabel[lang][r.reason]} · {shortDate(r.requested_at)}
+                    {reasonLabel[lang][r.reason]} · {shortDate(r.requested_at)}{r.source_type === "soundbox_auto" ? " · heard by Soundbox" : ""}
                     {r.transcript ? ` · “${r.transcript.slice(0, 60)}”` : ""}
                   </p>
                 </div>
