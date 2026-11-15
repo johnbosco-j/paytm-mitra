@@ -19,12 +19,9 @@ def make_engine(url: str):
 
             kwargs["poolclass"] = StaticPool
     if url.startswith("postgresql") and get_settings().serverless:
-        # Serverless (Vercel): one short-lived connection per request through a transaction pooler,
-        # which cannot keep prepared statements.
-        from sqlalchemy.pool import NullPool
-
-        kwargs["poolclass"] = NullPool
-        kwargs["connect_args"] = {"prepare_threshold": None}
+        # Serverless (Vercel) behind a transaction pooler: no prepared statements, and a tiny pool that a warm
+        # function instance reuses instead of paying a TLS handshake on every query.
+        kwargs.update(pool_size=2, max_overflow=2, pool_recycle=240, pool_pre_ping=True, connect_args={"prepare_threshold": None})
     engine = create_engine(url, **kwargs)
     if url.startswith("sqlite"):
 

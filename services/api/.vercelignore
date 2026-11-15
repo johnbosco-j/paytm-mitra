@@ -1,0 +1,11 @@
+.venv
+.pgdata
+*.db
+.env
+.env.*
+tests
+__pycache__
+.ruff_cache
+.pytest_cache
+seed_demo.py
+mitra_mcp.py

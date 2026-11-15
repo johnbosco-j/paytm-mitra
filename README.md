@@ -121,18 +121,21 @@ docs/01–17                    original LEAP blueprint (spec, architecture, ris
 
 `MITRA_DATABASE_URL` (default SQLite `mitra.db`; any SQLAlchemy URL, e.g. PostgreSQL), `MITRA_JWT_SECRET` (**set in any shared deployment**), `MITRA_COOKIE_SECURE=true` behind HTTPS, `MITRA_GEMINI_MODELS` (failover order), `MITRA_AI_PROVIDER=none` to force rules-only, `MITRA_API_ORIGIN` for the web proxy. The Paytm connector flag stays `false` until approved access exists.
 
+## Live
+
+https://paytm-mitra.vercel.app (web) → https://mitra-api.vercel.app (API, Mumbai) → Supabase Postgres (Mumbai, private `mitra` schema). Demo logins are handed out separately, not kept in this repo.
+
 ## Deploy (Vercel + hosted Postgres)
 
 1. Create a Postgres database (Supabase or Neon). Use the pooled connection string, as `postgresql+psycopg://…`.
 2. From `services/api`: `MITRA_DATABASE_URL=<url> .venv/bin/alembic upgrade head`, then `MITRA_DATABASE_URL=<url> DEMO_PASSWORD=<choose one> .venv/bin/python seed_demo.py`.
-3. Vercel project 1, root `services/api` (uses `api/index.py` + `vercel.json`). Env: `MITRA_DATABASE_URL`, `MITRA_SERVERLESS=true`, `MITRA_JWT_SECRET`, `MITRA_COOKIE_SECURE=true`, `MITRA_DATA_KEY`, `MITRA_SARVAM_API_KEY`, `MITRA_PAYTM_ENV=sandbox`, `MITRA_CORS_ORIGINS=<web URL>`.
+3. Vercel project 1, root `services/api` (Vercel's FastAPI support serves `app/main.py`; runtime packages come from `pyproject.toml`; `vercel.json` pins the Mumbai region). Env: `MITRA_DATABASE_URL`, `MITRA_SERVERLESS=true`, `MITRA_JWT_SECRET`, `MITRA_COOKIE_SECURE=true`, `MITRA_DATA_KEY`, `MITRA_SARVAM_API_KEY`, `MITRA_PAYTM_ENV=sandbox`, `MITRA_CORS_ORIGINS=<web URL>`.
 4. Vercel project 2, root `apps/web`. Env: `MITRA_API_ORIGIN=<API URL>`.
 
 The offline model (`services/ml`) stays on the laptop; hosted stores use AI mode "Best available".
 
 ## Known gaps (honest list)
 
-- Not deployed yet: the hosted database has to be created first (see Deploy).
 - The Soundbox voice lines exist in Tamil, Hindi and English; other languages hear English. Listening works in all 22.
 - Sandbox payments are simulated and labelled; no real Paytm transaction has been made.
 - Postgres row-level security is not added yet (tenant isolation is enforced in the API layer and tested).

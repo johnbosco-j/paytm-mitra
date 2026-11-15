@@ -24,3 +24,9 @@ services/ml/data_v2/
 services/ml/reports/*.log
 assets/blender/vendor/
 services/api/.pgdata/
+
+# hosted deployment secrets (never commit)
+.env.production
+.env*.local
+.vercel
+JURY_LOGIN.txt
